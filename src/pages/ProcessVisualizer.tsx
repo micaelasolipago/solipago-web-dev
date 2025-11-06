@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Dialog,
   DialogContent,
@@ -188,12 +189,17 @@ const ProcessVisualizer = () => {
       {/* Header */}
       <header className="border-b border-border/50 bg-background/95 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-6 py-6">
-          <h1 className="text-4xl font-black bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            Procesos de Venta
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Visualización interactiva de los flujos de trabajo
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-4xl font-black bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+                Procesos de Venta
+              </h1>
+              <p className="text-muted-foreground mt-2 text-lg">
+                Visualización interactiva de los flujos de trabajo
+              </p>
+            </div>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
