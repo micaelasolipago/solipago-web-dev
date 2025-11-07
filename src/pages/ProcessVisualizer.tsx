@@ -230,13 +230,15 @@ const ProcessVisualizer = () => {
                     <div className="flex items-center gap-4 overflow-x-auto pb-4">
                       {process.stages.map((stage, index) => {
                         const isComplete = isStageComplete(process.id, index, stage.fields);
-                        const bgColor = isComplete ? "bg-green-500/20 border-green-500" : "bg-orange-500/20 border-orange-500";
+                        const cardClasses = isComplete 
+                          ? "bg-stage-complete/20 border-stage-complete" 
+                          : "bg-stage-pending/20 border-stage-pending";
                         
                         return (
                           <div key={index} className="flex items-center gap-4 flex-shrink-0">
                             {/* Stage Card */}
                             <Card
-                              className={`${bgColor} border-2 min-w-[240px] cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300`}
+                              className={`${cardClasses} border-2 min-w-[220px] cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300`}
                               onClick={() => {
                                 const currentData = fieldData[process.id]?.[index] || {};
                                 const initialValues: { [key: string]: string } = {};
@@ -252,12 +254,12 @@ const ProcessVisualizer = () => {
                                 });
                               }}
                             >
-                              <CardHeader className="pb-2">
-                                <CardTitle className="text-base font-bold">
+                              <CardHeader className="pb-2 pt-3">
+                                <CardTitle className="text-sm font-bold">
                                   {stage.title}
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent className="space-y-2">
+                              <CardContent className="space-y-2 pb-3">
                                 <div>
                                   <p className="text-xs font-semibold mb-1.5 opacity-70">
                                     CAMPOS:
@@ -265,7 +267,7 @@ const ProcessVisualizer = () => {
                                   <ul className="space-y-0.5">
                                     {stage.fields.map((field, idx) => (
                                       <li key={idx} className="text-xs flex items-start gap-1.5">
-                                        <span className="text-[10px] mt-0.5">#</span>
+                                        <span className="text-[10px] mt-0.5">•</span>
                                         <span>{field}</span>
                                       </li>
                                     ))}
@@ -276,8 +278,8 @@ const ProcessVisualizer = () => {
                                     {stage.apps.map((app, idx) => (
                                       <Badge
                                         key={idx}
-                                        variant="secondary"
-                                        className="text-[10px] px-2 py-0"
+                                        variant="outline"
+                                        className="text-[9px] px-1.5 py-0 h-4"
                                       >
                                         {app}
                                       </Badge>
@@ -289,7 +291,7 @@ const ProcessVisualizer = () => {
 
                             {/* Arrow */}
                             {index < process.stages.length - 1 && (
-                              <ArrowRight className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+                              <ArrowRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                             )}
                           </div>
                         );

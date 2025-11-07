@@ -55,6 +55,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				'stage-pending': {
+					DEFAULT: 'hsl(var(--stage-pending))',
+					foreground: 'hsl(var(--stage-pending-foreground))'
+				},
+				'stage-complete': {
+					DEFAULT: 'hsl(var(--stage-complete))',
+					foreground: 'hsl(var(--stage-complete-foreground))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

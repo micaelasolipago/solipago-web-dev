@@ -49,6 +49,12 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
+    /* Stage status colors */
+    --stage-pending: 25 95% 53%;
+    --stage-pending-foreground: 33 100% 10%;
+    --stage-complete: 142 76% 36%;
+    --stage-complete-foreground: 138 76% 97%;
+
     /* Design tokens */
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
     --gradient-card: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 96%));
@@ -95,6 +101,12 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Stage status colors - dark mode */
+    --stage-pending: 25 95% 53%;
+    --stage-pending-foreground: 33 100% 10%;
+    --stage-complete: 142 76% 36%;
+    --stage-complete-foreground: 138 76% 97%;
 
     /* Dark mode design tokens */
     --gradient-card: linear-gradient(135deg, hsl(215 28% 10%), hsl(215 28% 12%));
