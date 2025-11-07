@@ -41,54 +41,49 @@ const processes: Process[] = [
     name: "Producto estándar",
     stages: [
       {
+        title: "Ventas",
+        fields: ["Nombre del Cliente", "Nombre del Producto", "Fecha de entrega requerida", "Usuario"],
+        apps: [],
+      },
+      {
         title: "Producción | PCP",
-        fields: ["Programa", "Fecha estipulada"],
+        fields: ["Fecha inicio Producción", "Fecha fin Producción", "Usuario"],
         apps: ["SIEMENS Opcenter SC"],
       },
       {
         title: "Ventas",
-        fields: ["Oportunidad"],
-        apps: [],
-      },
-      {
-        title: "Ventas",
-        fields: ["Cotización", "Activación del pedido", "Fecha de entrega"],
+        fields: ["Fecha rechazo", "Fecha activación del pedido", "Fecha de entrega final", "Usuario"],
         apps: ["Bejerman ERP"],
       },
     ],
   },
   {
     id: "p3",
-    name: "Producto especial con Ingeniería adaptada",
+    name: "Producto especial con Ingeniería Adaptada",
     stages: [
       {
         title: "Ventas",
-        fields: ["Oportunidad"],
+        fields: ["Nombre del Cliente", "Nombre del Producto", "Fecha de entrega requerida", "Usuario"],
         apps: [],
       },
       {
         title: "Ingeniería",
-        fields: ["Factibilidad"],
+        fields: ["Factibilidad [SI/NO]", "Fecha inicio Diseño", "Fecha fin Diseño", "Usuario"],
         apps: ["SIEMENS Teamcenter"],
       },
       {
         title: "Administración",
-        fields: ["Costos"],
+        fields: ["Costo informado [SI/NO]", "Usuario"],
         apps: ["Bejerman ERP"],
       },
       {
-        title: "Ingeniería",
-        fields: ["Fecha de inicio", "Tiempo de desarrollo"],
-        apps: ["SIEMENS Teamcenter"],
-      },
-      {
         title: "Producción | PCP",
-        fields: ["Carga de planta", "Fecha de inicio", "Fecha de entrega"],
+        fields: ["Fecha inicio Producción", "Fecha fin Producción", "Usuario"],
         apps: ["SIEMENS Opcenter SC"],
       },
       {
         title: "Ventas",
-        fields: ["Cotización", "Activación del pedido", "Fecha de entrega"],
+        fields: ["Fecha rechazo", "Fecha activación del pedido", "Fecha de entrega final", "Usuario"],
         apps: ["Bejerman ERP"],
       },
     ],
@@ -99,42 +94,32 @@ const processes: Process[] = [
     stages: [
       {
         title: "Ventas",
-        fields: ["Oportunidad"],
+        fields: ["Nombre del Cliente", "Nombre del Producto", "Fecha de entrega requerida", "Usuario"],
         apps: [],
       },
       {
         title: "Ingeniería",
-        fields: ["Factibilidad", "Estimación materiales"],
+        fields: ["Factibilidad [SI/NO]", "Fecha inicio Diseño", "Fecha fin Diseño", "Usuario"],
         apps: ["SIEMENS Teamcenter"],
       },
       {
         title: "Producción | PCP",
-        fields: ["Capacidad técnica", "Tiempo de producción"],
+        fields: ["Factibilidad [SI/NO]", "Fecha inicio Producción", "Fecha fin Producción", "Usuario"],
         apps: ["SIEMENS Opcenter SC"],
       },
       {
         title: "Administración",
-        fields: ["Costos", "Costo de oportunidad"],
+        fields: ["Costo informado [SI/NO]", "Usuario"],
         apps: ["Bejerman ERP"],
       },
       {
         title: "Directorio",
-        fields: ["Conveniencia", "Etapas"],
+        fields: ["Ok para avanzar [SI/NO]", "Usuario"],
         apps: [],
       },
       {
-        title: "Ingeniería",
-        fields: ["Fecha de inicio x etapa", "Tipo de desarrollo x etapa", "Fecha de entrega x etapa"],
-        apps: ["SIEMENS Teamcenter"],
-      },
-      {
-        title: "Producción | PCP",
-        fields: ["Carga de planta", "Fecha de inicio x etapa", "Fecha de entrega x etapa"],
-        apps: ["SIEMENS Opcenter SC"],
-      },
-      {
         title: "Ventas",
-        fields: ["Cotización", "Activación del pedido", "Fecha de entrega"],
+        fields: ["Fecha rechazo", "Fecha activación del pedido", "Fecha de entrega final", "Usuario"],
         apps: ["Bejerman ERP"],
       },
     ],
