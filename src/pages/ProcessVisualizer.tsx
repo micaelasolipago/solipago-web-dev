@@ -37,14 +37,24 @@ const ProcessVisualizer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/95 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-6 py-4">
+      <header className="border-b border-border/50 bg-card/95 backdrop-blur-xl sticky top-0 z-40 shadow-soft">
+        <div className="container mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-black bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              Gestión de Pedidos - Solipago
-            </h1>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Gestión de Pedidos
+                </h1>
+                <p className="text-xs text-muted-foreground">Solipago</p>
+              </div>
+            </div>
             <ThemeToggle />
           </div>
         </div>
@@ -55,15 +65,25 @@ const ProcessVisualizer = () => {
         <div className="space-y-8">
           
           {/* Producto Estándar */}
-          <Card className="border-2">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-2xl">Producto Estándar</CardTitle>
+          <Card className="border-2 shadow-medium hover:shadow-strong transition-all duration-300 overflow-hidden">
+            <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-accent/5 border-b">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <CardTitle className="text-2xl font-bold">Producto Estándar</CardTitle>
+              </div>
             </CardHeader>
             <div className="px-6 pb-6">
-              <div className="flex gap-4 overflow-x-auto pb-4">
+              <div className="flex gap-4 overflow-x-auto pb-4 pt-4">
                 {/* Ventas */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ventas</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ventas</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -110,8 +130,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Producción | PCP */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Producción | PCP</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Producción | PCP</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -149,8 +172,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Ventas Final */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ventas</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ventas</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -200,25 +226,38 @@ const ProcessVisualizer = () => {
               </div>
 
               <Button 
-                className="w-full mt-4"
+                className="w-full mt-6 bg-gradient-primary hover:opacity-90 shadow-medium text-white font-semibold"
                 size="lg"
                 onClick={() => handleNewSale('Producto Estándar')}
               >
-                + Nueva venta
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva venta
               </Button>
             </div>
           </Card>
 
           {/* Producto Especial con Ingeniería Adaptada */}
-          <Card className="border-2">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-2xl">Producto Especial con Ingeniería Adaptada</CardTitle>
+          <Card className="border-2 shadow-medium hover:shadow-strong transition-all duration-300 overflow-hidden">
+            <CardHeader className="pb-4 bg-gradient-to-r from-accent/5 to-primary/5 border-b">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                  </svg>
+                </div>
+                <CardTitle className="text-2xl font-bold">Producto Especial con Ingeniería Adaptada</CardTitle>
+              </div>
             </CardHeader>
             <div className="px-6 pb-6">
-              <div className="flex gap-4 overflow-x-auto pb-4">
+              <div className="flex gap-4 overflow-x-auto pb-4 pt-4">
                 {/* Ventas */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ventas</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ventas</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -265,8 +304,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Ingeniería */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ingeniería</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ingeniería</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -320,8 +362,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Administración */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Administración</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Administración</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -353,8 +398,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Producción | PCP */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Producción | PCP</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Producción | PCP</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -392,8 +440,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Ventas Final */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ventas</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ventas</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -443,25 +494,38 @@ const ProcessVisualizer = () => {
               </div>
 
               <Button 
-                className="w-full mt-4"
+                className="w-full mt-6 bg-gradient-primary hover:opacity-90 shadow-medium text-white font-semibold"
                 size="lg"
                 onClick={() => handleNewSale('Producto Especial con Ingeniería Adaptada')}
               >
-                + Nueva venta
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva venta
               </Button>
             </div>
           </Card>
 
           {/* Producto especial con Ingeniería a medida */}
-          <Card className="border-2">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-2xl">Producto especial con Ingeniería a medida</CardTitle>
+          <Card className="border-2 shadow-medium hover:shadow-strong transition-all duration-300 overflow-hidden">
+            <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-accent/5 border-b">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <CardTitle className="text-2xl font-bold">Producto especial con Ingeniería a medida</CardTitle>
+              </div>
             </CardHeader>
             <div className="px-6 pb-6">
-              <div className="flex gap-4 overflow-x-auto pb-4">
+              <div className="flex gap-4 overflow-x-auto pb-4 pt-4">
                 {/* Ventas */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ventas</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ventas</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -508,8 +572,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Ingeniería */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ingeniería</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ingeniería</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -563,8 +630,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Producción | PCP */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Producción | PCP</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Producción | PCP</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -618,8 +688,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Administración */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Administración</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Administración</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -651,8 +724,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Directorio */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Directorio</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Directorio</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -684,8 +760,11 @@ const ProcessVisualizer = () => {
                 </div>
 
                 {/* Ventas Final */}
-                <div className="flex-1 min-w-[250px] border border-border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-bold mb-4 text-lg">Ventas</h3>
+                <div className="flex-1 min-w-[280px] border-2 border-border rounded-xl p-5 bg-gradient-to-br from-card to-muted/30 shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-lg text-foreground">Ventas</h3>
+                  </div>
                   
                   <div className="space-y-3">
                     <div>
@@ -735,11 +814,14 @@ const ProcessVisualizer = () => {
               </div>
 
               <Button 
-                className="w-full mt-4"
+                className="w-full mt-6 bg-gradient-primary hover:opacity-90 shadow-medium text-white font-semibold"
                 size="lg"
                 onClick={() => handleNewSale('Producto especial con Ingeniería a medida')}
               >
-                + Nueva venta
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva venta
               </Button>
             </div>
           </Card>
