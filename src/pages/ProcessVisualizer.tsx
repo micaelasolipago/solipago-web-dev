@@ -333,7 +333,7 @@ const ProcessVisualizer = () => {
                           addSale(process.id, process.name);
                       }}
                   >
-                      <ChevronDown className="w-4 h-4 mr-1 rotate-90" /> Nueva Venta
+                      Nueva Venta
                   </Button>
                   
                   <Button variant="ghost" size="icon">
