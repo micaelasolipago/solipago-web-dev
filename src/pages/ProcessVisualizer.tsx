@@ -279,13 +279,13 @@ const ProcessVisualizer = () => {
       {/* HEADER y ThemeToggle */}
       {/* =================================== */}
       <header className="border-b bg-card shadow-sm sticky top-0 z-40">
-        <div className="container mx-auto px-8 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground tracking-tight truncate">
                 Visualizador de Procesos de Ventas
               </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 hidden sm:block">
                 Sistema de gestión comercial
               </p>
             </div>
@@ -297,7 +297,7 @@ const ProcessVisualizer = () => {
       {/* =================================== */}
       {/* CONTENIDO PRINCIPAL */}
       {/* =================================== */}
-      <main className="container mx-auto px-8 py-6">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="space-y-4">
           {/* Mapeamos sobre los procesos ESTÁTICOS para mostrar la tarjeta contenedora y el botón */}
           {processes.map((process) => {
@@ -312,36 +312,40 @@ const ProcessVisualizer = () => {
                 className="border hover:border-primary/30 transition-all duration-200 overflow-hidden shadow-sm"
               >
               <CardHeader
-                className="cursor-pointer select-none hover:bg-muted/50 transition-colors py-4"
+                className="cursor-pointer select-none hover:bg-muted/50 transition-colors py-3 sm:py-4"
                 onClick={() => setExpandedProcess(isExpanded ? null : process.id)}
               >
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-3 w-[520px]"> 
-                    {process.name}
-                    <Badge variant="secondary" className="font-normal text-xs">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <CardTitle className="text-base sm:text-lg font-semibold flex flex-wrap items-center gap-2 sm:gap-3 flex-1"> 
+                    <span className="break-words">{process.name}</span>
+                    <Badge variant="secondary" className="font-normal text-xs whitespace-nowrap">
                       {salesForThisProcess.length} {salesForThisProcess.length === 1 ? 'Venta' : 'Ventas'}
                     </Badge>
                   </CardTitle>
                   
-                  {/* BOTÓN: Nueva Venta */}
-                  <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={(e) => {
-                          e.stopPropagation(); 
-                          addSale(process.id, process.name);
-                      }}
-                  >
-                      Nueva Venta
-                  </Button>
-                  
-                  <Button variant="ghost" size="icon">
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    {/* BOTÓN: Nueva Venta */}
+                    <Button 
+                        variant="default" 
+                        size="sm"
+                        onClick={(e) => {
+                            e.stopPropagation(); 
+                            addSale(process.id, process.name);
+                        }}
+                        className="text-xs sm:text-sm"
+                    >
+                        <PlusCircle className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Nueva Venta</span>
+                    </Button>
+                    
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
 
@@ -352,8 +356,8 @@ const ProcessVisualizer = () => {
                     if (!saleProcess) return null;
 
                     return (
-                        <div key={sale.id} className="border-t bg-muted/20 pt-4 pb-6 px-6">
-                            <div className="flex items-center justify-between mb-4">
+                        <div key={sale.id} className="border-t bg-muted/20 pt-3 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6">
+                            <div className="flex items-center justify-between mb-3 sm:mb-4">
                                 {/* Etiqueta de la Venta (ID) */}
                                 {/*
                                 <span className="text-sm font-bold text-foreground/80">
@@ -365,13 +369,15 @@ const ProcessVisualizer = () => {
                                     variant="destructive" 
                                     size="sm"
                                     onClick={() => removeSale(sale.id)}
+                                    className="text-xs sm:text-sm"
                                 >
-                                    <X className="w-4 h-4 mr-1" /> Eliminar
+                                    <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                                    <span className="hidden xs:inline">Eliminar</span>
                                 </Button>
                             </div>
                             
                             {/* FILA DE ETAPAS */}
-                            <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
+                            <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
                                 {saleProcess.stages.map((stage, index) => {
                                     // isComplete y cardClasses (Punto 3)
                                     const isComplete = isStageComplete(sale.id, index, stage.fields);
@@ -383,10 +389,10 @@ const ProcessVisualizer = () => {
                                     const currentData = fieldData[sale.id]?.[index] || {};
                                     
                                     return (
-                                        <div key={index} className="flex items-center gap-4 flex-shrink-0 h-full">
+                                        <div key={index} className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0 h-full">
                                             {/* Stage Card */}
                                             <Card
-                                                className={`${cardClasses} border min-w-[220px] cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 h-full`}
+                                                className={`${cardClasses} border min-w-[180px] sm:min-w-[200px] md:min-w-[220px] cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 h-full`}
                                                 onClick={() => {
                                                     // Usamos sale.id como processId para el estado selectedStage
                                                     const initialValues: { [key: string]: string } = {};
@@ -430,14 +436,14 @@ const ProcessVisualizer = () => {
 
                                                     {/* Bloque de aplicaciones */}
                                                     {stage.apps.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1 mt-2">
+                                                        <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-2 sm:mt-3">
                                                             {stage.apps.map((app, idx) => {
                                                                 const { style, className: appClass } = getAppStyles(app);
                                                                 return (
                                                                     <Badge
                                                                         key={idx}
                                                                         variant="outline"
-                                                                        className={cn("text-[9px] px-1.5 py-0 h-4", appClass)}
+                                                                        className={cn("text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5", appClass)}
                                                                         style={style}
                                                                     >
                                                                         {app}
@@ -451,7 +457,7 @@ const ProcessVisualizer = () => {
 
                                             {/* Arrow */}
                                             {index < saleProcess.stages.length - 1 && (
-                                                <ArrowRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0 hidden sm:block" />
                                             )}
                                         </div>
                                     );
@@ -476,18 +482,18 @@ const ProcessVisualizer = () => {
           setFormValues({});
         }}
       >
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">
               {selectedStage?.stage.title} - {selectedStage?.processName}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm">
               Instancia: {selectedStage?.processId}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
 {/* 1. Bloque de campos (CON LÓGICA DE FECHA CORREGIDA) */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {selectedStage?.stage.fields.map((field, idx) => {
                 // Detección de tipos de campo
                 const isYesNoField = field.includes("[SI/NO]");
@@ -498,8 +504,8 @@ const ProcessVisualizer = () => {
                 const formKey = cleanField;
 
                 return (
-                  <div key={idx} className="grid gap-2">
-                    <Label htmlFor={`field-${idx}`}>{cleanField}</Label>
+                  <div key={idx} className="grid gap-1.5 sm:gap-2">
+                    <Label htmlFor={`field-${idx}`} className="text-xs sm:text-sm">{cleanField}</Label>
                     
                     {isYesNoField ? (
                       // (Bloque Select se mantiene igual)
@@ -537,14 +543,14 @@ const ProcessVisualizer = () => {
             </div>
             {/* Bloque de aplicaciones (Estilos Condicionales) */}
             {selectedStage?.stage.apps && selectedStage.stage.apps.length > 0 && (
-              <div className="flex flex-wrap gap-2"> 
+              <div className="flex flex-wrap gap-1.5 sm:gap-2"> 
                 {selectedStage.stage.apps.map((app, idx) => {
                   const { style, className: appClass } = getAppStyles(app); 
                   return (
                     <Badge
                       key={idx}
                       variant="outline"
-                      className={cn("text-sm", appClass)}
+                      className={cn("text-xs sm:text-sm", appClass)}
                       style={style}
                     >
                       {app}
@@ -554,17 +560,18 @@ const ProcessVisualizer = () => {
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex justify-end gap-2 pt-3 sm:pt-4">
               <Button
                 variant="outline"
                 onClick={() => {
                   setSelectedStage(null);
                   setFormValues({});
                 }}
+                className="text-xs sm:text-sm"
               >
                 Cancelar
               </Button>
-              <Button onClick={handleSaveFields}>
+              <Button onClick={handleSaveFields} className="text-xs sm:text-sm">
                 Guardar
               </Button>
             </div>
