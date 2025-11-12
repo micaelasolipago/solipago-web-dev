@@ -278,17 +278,17 @@ const ProcessVisualizer = () => {
       {/* =================================== */}
       {/* HEADER y ThemeToggle */}
       {/* =================================== */}
-      <header className="border-b border-border/50 bg-background/95 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-6 py-4">
+      <header className="border-b bg-card shadow-sm sticky top-0 z-40">
+        <div className="container mx-auto px-8 py-5">
           <div className="flex items-center justify-between">
-            {/* INICIO DEL BLOQUE VULCANO (Solo Título) */}
-            <h1 
-              className="text-3xl font-black"
-              style={{ color: '#F46917', fontFamily: 'Arial, sans-serif' }}
-            >
-              Proceso de Venta Vulcano
-            </h1>
-            {/* FIN DEL BLOQUE VULCANO */}
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+                Visualizador de Procesos de Ventas
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Sistema de gestión comercial
+              </p>
+            </div>
             <ThemeToggle />
           </div>
         </div>
@@ -297,8 +297,8 @@ const ProcessVisualizer = () => {
       {/* =================================== */}
       {/* CONTENIDO PRINCIPAL */}
       {/* =================================== */}
-      <main className="container mx-auto px-6 py-8">
-        <div className="space-y-6">
+      <main className="container mx-auto px-8 py-6">
+        <div className="space-y-4">
           {/* Mapeamos sobre los procesos ESTÁTICOS para mostrar la tarjeta contenedora y el botón */}
           {processes.map((process) => {
             const isExpanded = expandedProcess === process.id;
@@ -309,18 +309,17 @@ const ProcessVisualizer = () => {
             return (
               <Card
                 key={process.id} 
-                className="border-2 hover:border-primary/40 transition-all duration-300 overflow-hidden"
+                className="border hover:border-primary/30 transition-all duration-200 overflow-hidden shadow-sm"
               >
               <CardHeader
-                className="cursor-pointer select-none hover:bg-muted/30 transition-colors py-4"
+                className="cursor-pointer select-none hover:bg-muted/50 transition-colors py-4"
                 onClick={() => setExpandedProcess(isExpanded ? null : process.id)}
               >
                 <div className="flex items-center justify-between">
-                  {/* MODIFICACIÓN: AÑADIMOS w-52 AL CONTENEDOR DEL TÍTULO */}
-                  <CardTitle className="text-xl font-bold flex items-center gap-3 w-[520px]"> 
+                  <CardTitle className="text-lg font-semibold flex items-center gap-3 w-[520px]"> 
                     {process.name}
-                    <Badge variant="secondary" className="font-normal">
-                      {salesForThisProcess.length} Ventas Activas
+                    <Badge variant="secondary" className="font-normal text-xs">
+                      {salesForThisProcess.length} {salesForThisProcess.length === 1 ? 'Venta' : 'Ventas'}
                     </Badge>
                   </CardTitle>
                   
@@ -353,7 +352,7 @@ const ProcessVisualizer = () => {
                     if (!saleProcess) return null;
 
                     return (
-                        <div key={sale.id} className="border-t border-border/50 bg-background/50 pt-4 pb-6 px-6">
+                        <div key={sale.id} className="border-t bg-muted/20 pt-4 pb-6 px-6">
                             <div className="flex items-center justify-between mb-4">
                                 {/* Etiqueta de la Venta (ID) */}
                                 {/*
@@ -372,7 +371,7 @@ const ProcessVisualizer = () => {
                             </div>
                             
                             {/* FILA DE ETAPAS */}
-                            <div className="flex items-stretch gap-4 overflow-x-auto pb-4">
+                            <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
                                 {saleProcess.stages.map((stage, index) => {
                                     // isComplete y cardClasses (Punto 3)
                                     const isComplete = isStageComplete(sale.id, index, stage.fields);
@@ -387,7 +386,7 @@ const ProcessVisualizer = () => {
                                         <div key={index} className="flex items-center gap-4 flex-shrink-0 h-full">
                                             {/* Stage Card */}
                                             <Card
-                                                className={`${cardClasses} border-2 min-w-[220px] cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 h-full`}
+                                                className={`${cardClasses} border min-w-[220px] cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 h-full`}
                                                 onClick={() => {
                                                     // Usamos sale.id como processId para el estado selectedStage
                                                     const initialValues: { [key: string]: string } = {};
@@ -406,7 +405,7 @@ const ProcessVisualizer = () => {
                                                 }}
                                             >
                                                 <CardHeader className="pb-2 pt-3">
-                                                    <CardTitle className="text-sm font-bold">
+                                                    <CardTitle className="text-sm font-semibold">
                                                       {stage.title}
                                                     </CardTitle>
                                                 </CardHeader>

@@ -8,108 +8,108 @@
 
 @layer base {
   :root {
-    /* Light mode - clean and modern */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light mode - Professional corporate theme */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 15%;
 
-    /* Blue accent colors */
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
+    /* Corporate blue accent - muted and professional */
+    --primary: 215 45% 40%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 215 25% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 200 98% 39%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 50% 35%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 65% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
+    --border: 215 20% 88%;
+    --input: 215 20% 92%;
+    --ring: 215 45% 40%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 215 30% 97%;
+    --sidebar-foreground: 215 25% 20%;
+    --sidebar-primary: 215 45% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 92%;
+    --sidebar-accent-foreground: 215 25% 20%;
+    --sidebar-border: 215 20% 88%;
+    --sidebar-ring: 215 45% 40%;
 
-    /* Stage status colors */
-    --stage-pending: 25 95% 53%;
-    --stage-pending-foreground: 33 100% 10%;
-    --stage-complete: 142 76% 36%;
-    --stage-complete-foreground: 138 76% 97%;
+    /* Stage status colors - professional */
+    --stage-pending: 35 85% 50%;
+    --stage-pending-foreground: 0 0% 100%;
+    --stage-complete: 145 60% 35%;
+    --stage-complete-foreground: 0 0% 100%;
 
-    /* Design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 96%));
-    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.15);
-    --shadow-card: 0 10px 30px -10px hsl(217 91% 60% / 0.1);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Design tokens - corporate */
+    --gradient-primary: linear-gradient(135deg, hsl(215 45% 40%), hsl(215 45% 50%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(210 20% 98%));
+    --shadow-glow: 0 4px 20px hsl(215 45% 40% / 0.08);
+    --shadow-card: 0 2px 12px hsl(215 25% 15% / 0.06);
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    /* Dark mode - sleek and professional */
-    --background: 222 84% 5%;
-    --foreground: 210 40% 94%;
+    /* Dark mode - Professional corporate theme */
+    --background: 215 30% 8%;
+    --foreground: 210 20% 92%;
 
-    --card: 215 28% 10%;
-    --card-foreground: 210 40% 94%;
+    --card: 215 25% 12%;
+    --card-foreground: 210 20% 92%;
 
-    --popover: 215 28% 10%;
-    --popover-foreground: 210 40% 94%;
+    --popover: 215 25% 12%;
+    --popover-foreground: 210 20% 92%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 84% 5%;
+    --primary: 215 50% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 16% 20%;
-    --secondary-foreground: 210 40% 90%;
+    --secondary: 215 20% 18%;
+    --secondary-foreground: 210 20% 88%;
 
-    --muted: 215 28% 12%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 215 25% 15%;
+    --muted-foreground: 215 15% 60%;
 
-    --accent: 200 98% 39%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 55% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 215 28% 15%;
-    --input: 215 28% 12%;
-    --ring: 217 91% 60%;
+    --border: 215 20% 20%;
+    --input: 215 25% 15%;
+    --ring: 215 50% 55%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 215 30% 10%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 215 50% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 215 20% 18%;
+    --sidebar-accent-foreground: 210 20% 88%;
+    --sidebar-border: 215 20% 20%;
+    --sidebar-ring: 215 50% 55%;
 
     /* Stage status colors - dark mode */
-    --stage-pending: 25 95% 53%;
-    --stage-pending-foreground: 33 100% 10%;
-    --stage-complete: 142 76% 36%;
-    --stage-complete-foreground: 138 76% 97%;
+    --stage-pending: 35 85% 55%;
+    --stage-pending-foreground: 0 0% 100%;
+    --stage-complete: 145 60% 45%;
+    --stage-complete-foreground: 0 0% 100%;
 
     /* Dark mode design tokens */
-    --gradient-card: linear-gradient(135deg, hsl(215 28% 10%), hsl(215 28% 12%));
+    --gradient-card: linear-gradient(135deg, hsl(215 25% 12%), hsl(215 25% 14%));
   }
 }
 
@@ -124,12 +124,12 @@
 }
 
 @layer components {
-  /* Service card hover effects */
+  /* Service card hover effects - professional */
   .service-card {
-    @apply transition-all duration-300 hover:shadow-[0_0_40px_hsl(217_91%_60%_/_0.15)] hover:border-primary/30;
+    @apply transition-all duration-200 hover:shadow-card hover:border-primary/20;
   }
 
-  /* Hero gradient text */
+  /* Hero gradient text - corporate */
   .hero-gradient {
     background: var(--gradient-primary);
     -webkit-background-clip: text;
@@ -142,10 +142,10 @@
     scroll-behavior: smooth;
   }
 
-  /* Animated background patterns */
+  /* Subtle background pattern */
   .bg-pattern {
-    background-image: radial-gradient(circle at 25% 25%, hsl(217 91% 60% / 0.1) 0%, transparent 50%),
-                      radial-gradient(circle at 75% 75%, hsl(217 91% 70% / 0.1) 0%, transparent 50%);
+    background-image: radial-gradient(circle at 25% 25%, hsl(215 45% 40% / 0.03) 0%, transparent 50%),
+                      radial-gradient(circle at 75% 75%, hsl(215 45% 50% / 0.03) 0%, transparent 50%);
   }
 
   /* Floating animation */
