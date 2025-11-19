@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 // ICONOS ACTUALIZADOS: Se añadió X (para eliminar)
 import { ArrowRight, ChevronDown, ChevronUp, X, PlusCircle } from "lucide-react";
-import { ThemeToggle } from "@/components/compound/ThemeToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Dialog,
   DialogContent,
