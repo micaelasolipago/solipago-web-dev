@@ -23,7 +23,16 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-unused-vars": "off",
+      // CAMBIO: Activar la regla para reportar variables sin usar.
+      // Las variables que comienzan con '_' se ignoran (útil para destructuración).
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "after-used",
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+        },
+      ],
     },
   }
 );
