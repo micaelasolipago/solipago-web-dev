@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// ICONOS ACTUALIZADOS: Se añadió X (para eliminar)
-import { ArrowRight, ChevronDown, ChevronUp, X, PlusCircle } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, PlusCircle, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Dialog,
@@ -15,8 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils"; 
-// Importaciones para campos de selección (SI/NO)
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -25,9 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-
 // ===================================
-// 1. INTERFACES ACTUALIZADAS
+// 1. INTERFACES
 // ===================================
 
 interface ProcessStage {
@@ -43,7 +40,6 @@ interface Process {
 }
 
 interface FieldData {
-  // Ahora la clave principal es el saleId (ej: 'vta-001')
   [saleId: string]: {
     [stageIndex: number]: {
       [fieldName: string]: string;
@@ -51,20 +47,14 @@ interface FieldData {
   };
 }
 
-// NUEVA INTERFAZ para manejar las instancias de venta activas
 interface SalesInstance {
-  id: string; // ID único para esta venta (ej: 'vta-001')
-  processId: string; // Referencia al ID del proceso estático (ej: 'p1')
+  id: string;
+  processId: string;
   processName: string;
 }
 
-
 // ===================================
-// 2. DATA ESTÁTICA (CONFIGURACIÓN)
-// ===================================
-
-// ===================================
-// 2. DATA ESTÁTICA (CONFIGURACIÓN ORIGINAL)
+// 2. DATA ESTÁTICA
 // ===================================
 
 const processes: Process[] = [
@@ -80,12 +70,12 @@ const processes: Process[] = [
       {
         title: "Producción | PCP",
         fields: ["Fecha inicio Producción", "Fecha fin Producción", "Usuario"],
-        apps: ["SIEMENS Opcenter SC"], // <-- VUELVE LA APP CORRECTA
+        apps: ["SIEMENS Opcenter SC"],
       },
       {
         title: "Ventas",
         fields: ["Fecha rechazo", "Fecha activación del pedido", "Fecha de entrega final", "Usuario"],
-        apps: ["Bejerman ERP"], // <-- VUELVE LA APP CORRECTA
+        apps: ["Bejerman ERP"],
       },
     ],
   },
@@ -101,22 +91,22 @@ const processes: Process[] = [
       {
         title: "Ingeniería",
         fields: ["Factibilidad [SI/NO]", "Fecha inicio Diseño", "Fecha fin Diseño", "Usuario"],
-        apps: ["SIEMENS Teamcenter"], // <-- VUELVE LA APP CORRECTA
+        apps: ["SIEMENS Teamcenter"],
       },
       {
         title: "Administración",
         fields: ["Costo informado [SI/NO]", "Usuario"],
-        apps: ["Bejerman ERP"], // <-- VUELVE LA APP CORRECTA
+        apps: ["Bejerman ERP"],
       },
       {
         title: "Producción | PCP",
         fields: ["Fecha inicio Producción", "Fecha fin Producción", "Usuario"],
-        apps: ["SIEMENS Opcenter SC"], // <-- VUELVE LA APP CORRECTA
+        apps: ["SIEMENS Opcenter SC"],
       },
       {
         title: "Ventas",
         fields: ["Fecha rechazo", "Fecha activación del pedido", "Fecha de entrega final", "Usuario"],
-        apps: ["Bejerman ERP"], // <-- VUELVE LA APP CORRECTA
+        apps: ["Bejerman ERP"],
       },
     ],
   },
@@ -132,17 +122,17 @@ const processes: Process[] = [
       {
         title: "Ingeniería",
         fields: ["Factibilidad [SI/NO]", "Fecha inicio Diseño", "Fecha fin Diseño", "Usuario"],
-        apps: ["SIEMENS Teamcenter"], // <-- VUELVE LA APP CORRECTA
+        apps: ["SIEMENS Teamcenter"],
       },
       {
         title: "Producción | PCP",
         fields: ["Factibilidad [SI/NO]", "Fecha inicio Producción", "Fecha fin Producción", "Usuario"],
-        apps: ["SIEMENS Opcenter SC"], // <-- VUELVE LA APP CORRECTA
+        apps: ["SIEMENS Opcenter SC"],
       },
       {
         title: "Administración",
         fields: ["Costo informado [SI/NO]", "Usuario"],
-        apps: ["Bejerman ERP"], // <-- VUELVE LA APP CORRECTA
+        apps: ["Bejerman ERP"],
       },
       {
         title: "Directorio",
@@ -152,7 +142,7 @@ const processes: Process[] = [
       {
         title: "Ventas",
         fields: ["Fecha rechazo", "Fecha activación del pedido", "Fecha de entrega final", "Usuario"],
-        apps: ["Bejerman ERP"], // <-- VUELVE LA APP CORRECTA
+        apps: ["Bejerman ERP"],
       },
     ],
   },
@@ -162,34 +152,37 @@ const processes: Process[] = [
 // 3. ESTILOS Y UTILIDADES
 // ===================================
 
-const getAppStyles = (appName: string): { style: React.CSSProperties, className?: string } => {
+const getAppStyles = (appName: string): { className?: string } => {
   switch (appName.toLowerCase()) {
     case 'solidworks':
     case 'inventor':
     case 'nx cad':
-      return { style: { backgroundColor: '#FFD700', color: '#333' } }; // Amarillo CAD
+      return { className: "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800" };
     case 'erp':
     case 'sap ariba':
-      return { style: { backgroundColor: '#1E90FF', color: 'white' } }; // Azul ERP
+    case 'bejerman erp':
+      return { className: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800" };
     case 'wms':
     case 'sharepoint':
-      return { style: { backgroundColor: '#3CB371', color: 'white' } }; // Verde Gestión
+      return { className: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800" };
     case 'metrología':
     case 'control de calidad':
-      return { style: { backgroundColor: '#FF4500', color: 'white' } }; // Naranja QA
+      return { className: "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800" };
+    case 'siemens opcenter sc':
+    case 'siemens teamcenter':
+      return { className: "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800" };
     default:
-      return { style: { backgroundColor: '#E0E0E0', color: '#333' } };
+      return { className: "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700" };
   }
 };
 
-
 // ===================================
-// 4. COMPONENTE PRINCIPAL (ProcessVisualizer)
+// 4. COMPONENTE PRINCIPAL
 // ===================================
 
 const ProcessVisualizer = () => {
   const [selectedStage, setSelectedStage] = useState<{
-    processId: string; // ESTO AHORA CONTIENE EL saleId (ej: 'vta-001')
+    processId: string;
     processName: string;
     stageIndex: number;
     stage: ProcessStage;
@@ -198,48 +191,38 @@ const ProcessVisualizer = () => {
   const [fieldData, setFieldData] = useState<FieldData>({});
   const [formValues, setFormValues] = useState<{ [key: string]: string }>({});
 
-  // >>> NUEVO ESTADO PARA GESTIONAR LAS INSTANCIAS DE VENTA
   const [salesInstances, setSalesInstances] = useState<SalesInstance[]>([
     { id: 'vta-001', processId: 'p1', processName: processes.find(p => p.id === 'p1')?.name || 'Producto estándar' },
     { id: 'vta-002', processId: 'p3', processName: processes.find(p => p.id === 'p3')?.name || 'Producto especial con Ingeniería Adaptada' },
     { id: 'vta-003', processId: 'p4', processName: processes.find(p => p.id === 'p4')?.name || 'Producto especial con Ingeniería a medida' },
   ]);
-  const [saleCounter, setSaleCounter] = useState(4); // Inicia el contador para el próximo ID (vta-004)
-  // <<< FIN DEL NUEVO ESTADO
+  const [saleCounter, setSaleCounter] = useState(4);
 
-
-  // FUNCIÓN PARA AGREGAR NUEVAS VENTAS
   const addSale = (processId: string, processName: string) => {
     const newId = `vta-${String(saleCounter).padStart(3, '0')}`;
     const newSale: SalesInstance = {
-        id: newId,
-        processId: processId,
-        processName: processName,
+      id: newId,
+      processId: processId,
+      processName: processName,
     };
     setSalesInstances(prev => [...prev, newSale]);
     setSaleCounter(prev => prev + 1);
     toast.info(`Nueva venta (${newId}) agregada al proceso: ${processName}`);
   };
 
-  // FUNCIÓN PARA ELIMINAR VENTAS
   const removeSale = (saleId: string) => {
     setSalesInstances(prev => prev.filter(sale => sale.id !== saleId));
-    
-    // Limpieza de fieldData asociado a la venta eliminada (Crucial para no dejar "basura" de datos)
     setFieldData(prev => {
-        const { [saleId]: _, ...rest } = prev;
-        return rest;
+      const { [saleId]: _, ...rest } = prev;
+      return rest;
     });
     toast.warning(`Venta ${saleId} eliminada.`);
   };
 
-
-  // FUNCIÓN ACTUALIZADA: USA saleId como clave
   const isStageComplete = (saleId: string, stageIndex: number, fields: string[]) => {
-    // Usamos el saleId como clave principal para buscar los datos de ESTA venta
-    const stageData = fieldData[saleId]?.[stageIndex]; 
+    const stageData = fieldData[saleId]?.[stageIndex];
     if (!stageData) return false;
-    
+
     return fields.every(field => {
       const isYesNoField = field.includes("[SI/NO]");
       const key = isYesNoField ? field.replace(" [SI/NO]", "") : field;
@@ -247,11 +230,10 @@ const ProcessVisualizer = () => {
     });
   };
 
-  // FUNCIÓN ACTUALIZADA: USA saleId como clave
   const handleSaveFields = () => {
     if (!selectedStage) return;
 
-    const saleId = selectedStage.processId; // selectedStage.processId AHORA CONTIENE el saleId
+    const saleId = selectedStage.processId;
 
     const newFieldData = { ...fieldData };
     if (!newFieldData[saleId]) {
@@ -261,7 +243,6 @@ const ProcessVisualizer = () => {
       newFieldData[saleId][selectedStage.stageIndex] = {};
     }
 
-    // El formValues ya usa las claves limpias (sin [SI/NO])
     Object.keys(formValues).forEach(fieldKey => {
       newFieldData[saleId][selectedStage.stageIndex][fieldKey] = formValues[fieldKey];
     });
@@ -271,7 +252,6 @@ const ProcessVisualizer = () => {
     setSelectedStage(null);
     setFormValues({});
   };
-
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -302,8 +282,6 @@ const ProcessVisualizer = () => {
           {/* Mapeamos sobre los procesos ESTÁTICOS para mostrar la tarjeta contenedora y el botón */}
           {processes.map((process) => {
             const isExpanded = expandedProcess === process.id;
-            
-            // Filtramos las ventas que corresponden a ESTE proceso
             const salesForThisProcess = salesInstances.filter(sale => sale.processId === process.id);
 
             return (
@@ -349,11 +327,8 @@ const ProcessVisualizer = () => {
                 </div>
               </CardHeader>
 
-                {/* CONTENIDO EXPANDIDO: Mapeamos las ventas activas */}
                 {isExpanded && salesForThisProcess.map(sale => {
-                    const saleProcess = processes.find(p => p.id === sale.processId);
-                    
-                    if (!saleProcess) return null;
+                  const saleProcess = processes.find(p => p.id === sale.processId);
 
                     return (
                         <div key={sale.id} className="border-t bg-muted/20 pt-3 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6">
@@ -472,9 +447,6 @@ const ProcessVisualizer = () => {
         </div>
       </main>
 
-      {/* =================================== */}
-      {/* MODAL DE ENTRADA DE DATOS */}
-      {/* =================================== */}
       <Dialog
         open={!!selectedStage}
         onOpenChange={() => {
@@ -495,11 +467,9 @@ const ProcessVisualizer = () => {
 {/* 1. Bloque de campos (CON LÓGICA DE FECHA CORREGIDA) */}
             <div className="space-y-3 sm:space-y-4">
               {selectedStage?.stage.fields.map((field, idx) => {
-                // Detección de tipos de campo
                 const isYesNoField = field.includes("[SI/NO]");
-                const isDateField = field.includes("Fecha"); // <-- LÍNEA AÑADIDA
-                
-                // Clave limpia para la etiqueta y el estado del formulario
+                const isDateField = field.includes("Fecha");
+
                 const cleanField = isYesNoField ? field.replace(" [SI/NO]", "") : field;
                 const formKey = cleanField;
 
@@ -508,7 +478,6 @@ const ProcessVisualizer = () => {
                     <Label htmlFor={`field-${idx}`} className="text-xs sm:text-sm">{cleanField}</Label>
                     
                     {isYesNoField ? (
-                      // (Bloque Select se mantiene igual)
                       <Select
                         value={formValues[formKey] || ""}
                         onValueChange={(value) => setFormValues(prev => ({
@@ -525,10 +494,9 @@ const ProcessVisualizer = () => {
                         </SelectContent>
                       </Select>
                     ) : (
-                      // (Bloque Input modificado)
                       <Input
                         id={`field-${idx}`}
-                        type={isDateField ? "date" : "text"} // <-- LÓGICA APLICADA
+                        type={isDateField ? "date" : "text"}
                         value={formValues[formKey] || ""}
                         onChange={(e) => setFormValues(prev => ({
                           ...prev,
@@ -541,11 +509,11 @@ const ProcessVisualizer = () => {
                 );
               })}
             </div>
-            {/* Bloque de aplicaciones (Estilos Condicionales) */}
+
             {selectedStage?.stage.apps && selectedStage.stage.apps.length > 0 && (
               <div className="flex flex-wrap gap-1.5 sm:gap-2"> 
                 {selectedStage.stage.apps.map((app, idx) => {
-                  const { style, className: appClass } = getAppStyles(app); 
+                  const { className: appClass } = getAppStyles(app);
                   return (
                     <Badge
                       key={idx}

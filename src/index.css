@@ -1,10 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-/* Solipago Landing Page Design System */
+/* Solipago Enterprise Design System - Radiant Edition */
 
 @layer base {
   :root {
@@ -119,11 +119,15 @@
   }
 
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-background text-foreground font-inter antialiased;
+    background-image: var(--ambient-gradient);
+    background-attachment: fixed;
+    /* Keep gradient fixed while scrolling */
   }
 }
 
 @layer components {
+
   /* Service card hover effects - professional */
   .service-card {
     @apply transition-all duration-200 hover:shadow-card hover:border-primary/20;
@@ -137,64 +141,34 @@
     background-clip: text;
   }
 
-  /* Smooth scroll behavior */
-  html {
-    scroll-behavior: smooth;
+  /* Radiant Button Override */
+  .bg-primary {
+    background: var(--primary-gradient) !important;
+    box-shadow: 0 4px 15px hsl(217 91% 60% / 0.3);
+    transition: all 0.3s ease;
+    border: none;
   }
 
   /* Subtle background pattern */
   .bg-pattern {
     background-image: radial-gradient(circle at 25% 25%, hsl(215 45% 40% / 0.03) 0%, transparent 50%),
-                      radial-gradient(circle at 75% 75%, hsl(215 45% 50% / 0.03) 0%, transparent 50%);
+      radial-gradient(circle at 75% 75%, hsl(215 45% 50% / 0.03) 0%, transparent 50%);
   }
 
-  /* Floating animation */
-  .float {
-    animation: float 6s ease-in-out infinite;
+  /* Subtle transitions only */
+  .fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
-
-  /* Pulse glow animation */
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes pulse-glow {
-    from { box-shadow: 0 0 20px hsl(217 91% 60% / 0.3); }
-    to { box-shadow: 0 0 30px hsl(217 91% 60% / 0.6), 0 0 40px hsl(217 91% 60% / 0.3); }
-  }
-
-  /* Stagger animation for cards */
-  .stagger-animate {
-    animation: slideInUp 0.6s ease-out forwards;
-  }
-
-  .stagger-animate:nth-child(1) { animation-delay: 0.1s; }
-  .stagger-animate:nth-child(2) { animation-delay: 0.2s; }
-  .stagger-animate:nth-child(3) { animation-delay: 0.3s; }
-
-  @keyframes slideInUp {
+  @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(15px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
-  }
-
-  /* Fade in animation */
-  .fade-in {
-    animation: fadeIn 0.8s ease-out forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
   }
 }
