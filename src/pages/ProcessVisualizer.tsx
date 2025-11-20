@@ -273,7 +273,7 @@ const ProcessVisualizer = () => {
           </div>
         </div>
       </header>
-      
+
       {/* =================================== */}
       {/* CONTENIDO PRINCIPAL */}
       {/* =================================== */}
@@ -286,160 +286,160 @@ const ProcessVisualizer = () => {
 
             return (
               <Card
-                key={process.id} 
+                key={process.id}
                 className="border hover:border-primary/30 transition-all duration-200 overflow-hidden shadow-sm"
               >
-              <CardHeader
-                className="cursor-pointer select-none hover:bg-muted/50 transition-colors py-3 sm:py-4"
-                onClick={() => setExpandedProcess(isExpanded ? null : process.id)}
-              >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <CardTitle className="text-base sm:text-lg font-semibold flex flex-wrap items-center gap-2 sm:gap-3 flex-1"> 
-                    <span className="break-words">{process.name}</span>
-                    <Badge variant="secondary" className="font-normal text-xs whitespace-nowrap">
-                      {salesForThisProcess.length} {salesForThisProcess.length === 1 ? 'Venta' : 'Ventas'}
-                    </Badge>
-                  </CardTitle>
-                  
-                  <div className="flex items-center gap-2 self-end sm:self-auto">
-                    {/* BOTÓN: Nueva Venta */}
-                    <Button 
-                        variant="default" 
+                <CardHeader
+                  className="cursor-pointer select-none hover:bg-muted/50 transition-colors py-3 sm:py-4"
+                  onClick={() => setExpandedProcess(isExpanded ? null : process.id)}
+                >
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <CardTitle className="text-base sm:text-lg font-semibold flex flex-wrap items-center gap-2 sm:gap-3 flex-1">
+                      <span className="break-words">{process.name}</span>
+                      <Badge variant="secondary" className="font-normal text-xs whitespace-nowrap">
+                        {salesForThisProcess.length} {salesForThisProcess.length === 1 ? 'Venta' : 'Ventas'}
+                      </Badge>
+                    </CardTitle>
+
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                      {/* BOTÓN: Nueva Venta */}
+                      <Button
+                        variant="default"
                         size="sm"
                         onClick={(e) => {
-                            e.stopPropagation(); 
-                            addSale(process.id, process.name);
+                          e.stopPropagation();
+                          addSale(process.id, process.name);
                         }}
                         className="text-xs sm:text-sm"
-                    >
+                      >
                         <PlusCircle className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
                         <span className="hidden sm:inline">Nueva Venta</span>
-                    </Button>
-                    
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
-                      )}
-                    </Button>
+                      </Button>
+
+                      <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
 
                 {isExpanded && salesForThisProcess.map(sale => {
                   const saleProcess = processes.find(p => p.id === sale.processId);
 
-                    return (
-                        <div key={sale.id} className="border-t bg-muted/20 pt-3 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6">
-                            <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                {/* Etiqueta de la Venta (ID) */}
-                                {/*
+                  return (
+                    <div key={sale.id} className="border-t bg-muted/20 pt-3 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6">
+                      <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        {/* Etiqueta de la Venta (ID) */}
+                        {/*
                                 <span className="text-sm font-bold text-foreground/80">
                                     Instancia de Venta: {sale.id}
                                 </span>
                                 */}
-                                {/* BOTÓN: ELIMINAR VENTA (Punto 1) */}
-                                <Button 
-                                    variant="destructive" 
-                                    size="sm"
-                                    onClick={() => removeSale(sale.id)}
-                                    className="text-xs sm:text-sm"
-                                >
-                                    <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                                    <span className="hidden xs:inline">Eliminar</span>
-                                </Button>
+                        {/* BOTÓN: ELIMINAR VENTA (Punto 1) */}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeSale(sale.id)}
+                          className="text-xs sm:text-sm"
+                        >
+                          <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <span className="hidden xs:inline">Eliminar</span>
+                        </Button>
+                      </div>
+
+                      {/* FILA DE ETAPAS */}
+                      <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                        {saleProcess.stages.map((stage, index) => {
+                          // isComplete y cardClasses (Punto 3)
+                          const isComplete = isStageComplete(sale.id, index, stage.fields);
+                          const cardClasses = isComplete
+                            ? "bg-stage-complete/20 border-stage-complete"
+                            : "bg-stage-pending/20 border-stage-pending";
+
+                          // Obtenemos los datos cargados para mostrar en la tarjeta
+                          const currentData = fieldData[sale.id]?.[index] || {};
+
+                          return (
+                            <div key={index} className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0 h-full">
+                              {/* Stage Card */}
+                              <Card
+                                className={`${cardClasses} border min-w-[180px] sm:min-w-[200px] md:min-w-[220px] cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 h-full`}
+                                onClick={() => {
+                                  // Usamos sale.id como processId para el estado selectedStage
+                                  const initialValues: { [key: string]: string } = {};
+                                  stage.fields.forEach(field => {
+                                    const isYesNoField = field.includes("[SI/NO]");
+                                    const key = isYesNoField ? field.replace(" [SI/NO]", "") : field;
+                                    initialValues[key] = currentData[key] || "";
+                                  });
+                                  setFormValues(initialValues);
+                                  setSelectedStage({
+                                    processId: sale.id, // AHORA ES sale.id
+                                    processName: sale.processName,
+                                    stageIndex: index,
+                                    stage
+                                  });
+                                }}
+                              >
+                                <CardHeader className="pb-2 pt-3">
+                                  <CardTitle className="text-sm font-semibold">
+                                    {stage.title}
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-2 pb-3">
+                                  {/* Bloque de campos con valores cargados (Punto 2) */}
+                                  <ul className="space-y-0.5" style={{ paddingLeft: 0, listStyleType: 'none' }}>
+                                    {stage.fields.map((field, idx) => {
+                                      const key = field.includes("[SI/NO]") ? field.replace(" [SI/NO]", "") : field;
+                                      const value = currentData[key];
+                                      return (
+                                        <li key={idx} className="text-xs">
+                                          {value ?
+                                            <span className="font-medium text-foreground">
+                                              {key}: <span className="font-normal text-muted-foreground">{value}</span>
+                                            </span>
+                                            : field
+                                          }
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+
+                                  {/* Bloque de aplicaciones */}
+                                  {stage.apps.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-2 sm:mt-3">
+                                      {stage.apps.map((app, idx) => {
+                                        const { style, className: appClass } = getAppStyles(app);
+                                        return (
+                                          <Badge
+                                            key={idx}
+                                            variant="outline"
+                                            className={cn("text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5", appClass)}
+                                            style={style}
+                                          >
+                                            {app}
+                                          </Badge>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+
+                              {/* Arrow */}
+                              {index < saleProcess.stages.length - 1 && (
+                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0 hidden sm:block" />
+                              )}
                             </div>
-                            
-                            {/* FILA DE ETAPAS */}
-                            <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-                                {saleProcess.stages.map((stage, index) => {
-                                    // isComplete y cardClasses (Punto 3)
-                                    const isComplete = isStageComplete(sale.id, index, stage.fields);
-                                    const cardClasses = isComplete 
-                                      ? "bg-stage-complete/20 border-stage-complete" 
-                                      : "bg-stage-pending/20 border-stage-pending";
-
-                                    // Obtenemos los datos cargados para mostrar en la tarjeta
-                                    const currentData = fieldData[sale.id]?.[index] || {};
-                                    
-                                    return (
-                                        <div key={index} className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0 h-full">
-                                            {/* Stage Card */}
-                                            <Card
-                                                className={`${cardClasses} border min-w-[180px] sm:min-w-[200px] md:min-w-[220px] cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 h-full`}
-                                                onClick={() => {
-                                                    // Usamos sale.id como processId para el estado selectedStage
-                                                    const initialValues: { [key: string]: string } = {};
-                                                    stage.fields.forEach(field => {
-                                                      const isYesNoField = field.includes("[SI/NO]");
-                                                      const key = isYesNoField ? field.replace(" [SI/NO]", "") : field;
-                                                      initialValues[key] = currentData[key] || "";
-                                                    });
-                                                    setFormValues(initialValues);
-                                                    setSelectedStage({ 
-                                                        processId: sale.id, // AHORA ES sale.id
-                                                        processName: sale.processName, 
-                                                        stageIndex: index,
-                                                        stage 
-                                                    });
-                                                }}
-                                            >
-                                                <CardHeader className="pb-2 pt-3">
-                                                    <CardTitle className="text-sm font-semibold">
-                                                      {stage.title}
-                                                    </CardTitle>
-                                                </CardHeader>
-                                                <CardContent className="space-y-2 pb-3">
-                                                    {/* Bloque de campos con valores cargados (Punto 2) */}
-                                                    <ul className="space-y-0.5" style={{ paddingLeft: 0, listStyleType: 'none' }}>
-                                                        {stage.fields.map((field, idx) => {
-                                                            const key = field.includes("[SI/NO]") ? field.replace(" [SI/NO]", "") : field;
-                                                            const value = currentData[key];
-                                                            return (
-                                                                <li key={idx} className="text-xs">
-                                                                    {value ? 
-                                                                        <span className="font-medium text-foreground">
-                                                                            {key}: <span className="font-normal text-muted-foreground">{value}</span>
-                                                                        </span> 
-                                                                        : field
-                                                                    }
-                                                                </li>
-                                                            );
-                                                        })}
-                                                    </ul>
-
-                                                    {/* Bloque de aplicaciones */}
-                                                    {stage.apps.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-2 sm:mt-3">
-                                                            {stage.apps.map((app, idx) => {
-                                                                const { style, className: appClass } = getAppStyles(app);
-                                                                return (
-                                                                    <Badge
-                                                                        key={idx}
-                                                                        variant="outline"
-                                                                        className={cn("text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5", appClass)}
-                                                                        style={style}
-                                                                    >
-                                                                        {app}
-                                                                    </Badge>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-
-                                            {/* Arrow */}
-                                            {index < saleProcess.stages.length - 1 && (
-                                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0 hidden sm:block" />
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    );
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
                 })}
               </Card>
             );
@@ -464,7 +464,7 @@ const ProcessVisualizer = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
-{/* 1. Bloque de campos (CON LÓGICA DE FECHA CORREGIDA) */}
+            {/* 1. Bloque de campos (CON LÓGICA DE FECHA CORREGIDA) */}
             <div className="space-y-3 sm:space-y-4">
               {selectedStage?.stage.fields.map((field, idx) => {
                 const isYesNoField = field.includes("[SI/NO]");
@@ -476,7 +476,7 @@ const ProcessVisualizer = () => {
                 return (
                   <div key={idx} className="grid gap-1.5 sm:gap-2">
                     <Label htmlFor={`field-${idx}`} className="text-xs sm:text-sm">{cleanField}</Label>
-                    
+
                     {isYesNoField ? (
                       <Select
                         value={formValues[formKey] || ""}
@@ -511,7 +511,7 @@ const ProcessVisualizer = () => {
             </div>
 
             {selectedStage?.stage.apps && selectedStage.stage.apps.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 sm:gap-2"> 
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {selectedStage.stage.apps.map((app, idx) => {
                   const { className: appClass } = getAppStyles(app);
                   return (
