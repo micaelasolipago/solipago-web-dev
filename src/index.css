@@ -8,28 +8,39 @@
 
 @layer base {
   :root {
-    /* Light mode - Professional corporate theme */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Light mode - Radiant & Luminous */
+    --background: 0 0% 100%;
+    /* Base white */
+    --foreground: 222 47% 11%;
+    /* Deep Navy */
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    /* White card base */
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Corporate blue accent - muted and professional */
-    --primary: 215 45% 40%;
+    /* Primary: Vibrant Azure (Fallback) */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 94%;
-    --secondary-foreground: 215 25% 20%;
+    /* Radiant Gradients */
+    --primary-gradient: linear-gradient(135deg, hsl(190 90% 50%), hsl(217 91% 60%));
+    /* Cyan to Azure */
+    --ambient-gradient: radial-gradient(circle at 50% 0%, hsl(210 100% 98%) 0%, hsl(0 0% 100%) 70%);
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 15% 45%;
+    /* Secondary: Very Light Cool Gray */
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222 47% 11%;
 
-    --accent: 215 50% 35%;
-    --accent-foreground: 0 0% 100%;
+    /* Muted: For backgrounds/borders */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent: Bright and airy */
+    --accent: 210 40% 98%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 65% 45%;
     --destructive-foreground: 0 0% 100%;
@@ -38,69 +49,74 @@
     --input: 215 20% 92%;
     --ring: 215 45% 40%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+    /* Slightly rounder for friendly radiant feel */
 
-    --sidebar-background: 215 30% 97%;
-    --sidebar-foreground: 215 25% 20%;
-    --sidebar-primary: 215 45% 40%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 92%;
-    --sidebar-accent-foreground: 215 25% 20%;
-    --sidebar-border: 215 20% 88%;
-    --sidebar-ring: 215 45% 40%;
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Stage status colors - professional */
-    --stage-pending: 35 85% 50%;
+    /* Stage status colors - Vibrant */
+    --stage-pending: 35 95% 60%;
     --stage-pending-foreground: 0 0% 100%;
-    --stage-complete: 145 60% 35%;
+    --stage-complete: 142 76% 45%;
     --stage-complete-foreground: 0 0% 100%;
 
-    /* Design tokens - corporate */
-    --gradient-primary: linear-gradient(135deg, hsl(215 45% 40%), hsl(215 45% 50%));
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(210 20% 98%));
-    --shadow-glow: 0 4px 20px hsl(215 45% 40% / 0.08);
-    --shadow-card: 0 2px 12px hsl(215 25% 15% / 0.06);
-    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Design tokens - Radiant Glows */
+    --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 0 10px hsl(217 91% 60% / 0.1);
+    /* Subtle blue tint */
+    --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 0 20px hsl(217 91% 60% / 0.2);
+    /* Stronger glow */
+    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.5);
   }
 
   .dark {
-    /* Dark mode - Professional corporate theme */
-    --background: 215 30% 8%;
-    --foreground: 210 20% 92%;
+    /* Dark mode - Neon/Cyber */
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
 
-    --card: 215 25% 12%;
-    --card-foreground: 210 20% 92%;
+    --card: 222 47% 10%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 215 25% 12%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 215 50% 55%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 20% 18%;
-    --secondary-foreground: 210 20% 88%;
+    --primary-gradient: linear-gradient(135deg, hsl(190 90% 50%), hsl(217 91% 60%));
+    --ambient-gradient: radial-gradient(circle at 50% 0%, hsl(222 47% 15%) 0%, hsl(222 47% 8%) 70%);
 
-    --muted: 215 25% 15%;
-    --muted-foreground: 215 15% 60%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --accent: 215 55% 50%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --destructive: 0 65% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
 
-    --border: 215 20% 20%;
-    --input: 215 25% 15%;
-    --ring: 215 50% 55%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 212.7 26.8% 83.9%;
 
     --sidebar-background: 215 30% 10%;
     --sidebar-foreground: 210 20% 88%;
     --sidebar-primary: 215 50% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 20% 18%;
-    --sidebar-accent-foreground: 210 20% 88%;
-    --sidebar-border: 215 20% 20%;
-    --sidebar-ring: 215 50% 55%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Stage status colors - dark mode */
     --stage-pending: 35 85% 55%;
@@ -135,10 +151,21 @@
 
   /* Hero gradient text - corporate */
   .hero-gradient {
-    background: var(--gradient-primary);
+    background: var(--primary-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Radiant Card Styles */
+  .enterprise-card {
+    @apply bg-card/80 backdrop-blur-sm text-card-foreground rounded-xl border border-white/50 shadow-sm transition-all duration-300;
+  }
+
+  .enterprise-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: hsl(217 91% 60% / 0.3);
+    transform: translateY(-2px);
   }
 
   /* Radiant Button Override */
@@ -147,6 +174,12 @@
     box-shadow: 0 4px 15px hsl(217 91% 60% / 0.3);
     transition: all 0.3s ease;
     border: none;
+  }
+
+  .bg-primary:hover {
+    box-shadow: 0 6px 20px hsl(217 91% 60% / 0.5);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
   }
 
   /* Subtle background pattern */
