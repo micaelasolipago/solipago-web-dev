@@ -28,6 +28,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEffect } from "react";
+
+// ===================================
+// MAPA DE TRADUCCIÓN (DB -> Frontend)
+// ===================================
+const dbToFrontendMap: Record<string, string> = {
+  // Ventas Inicial
+  cliente_nombre: "Nombre del Cliente",
+  producto_nombre: "Nombre del Producto",
+  fecha_entrega_requerida: "Fecha de entrega requerida",
+  usuario_ventas_inicial: "Usuario Ventas Inicial",
+
+  // Ingeniería
+  ingenieria_factibilidad: "Factibilidad [SI/NO]",
+  fecha_inicio_diseno: "Fecha inicio Diseño",
+  fecha_fin_diseno: "Fecha fin Diseño",
+  usuario_ingenieria: "Usuario Ingeniería",
+
+  // Administración
+  admin_costo_informado: "Costo informado [SI/NO]",
+  fecha_disponibilidad_materiales: "Fecha disponibilidad materiales",
+  usuario_administracion: "Usuario Administración",
+
+  // Producción | PCP
+  produccion_factibilidad: "Factibilidad [SI/NO]",
+  fecha_inicio_produccion: "Fecha inicio Producción",
+  fecha_fin_produccion: "Fecha fin Producción",
+  usuario_pcp: "Usuario PCP",
+
+  // Directorio
+  directorio_ok_avanzar: "Ok para avanzar [SI/NO]",
+  usuario_directorio: "Usuario Directorio",
+
+  // Ventas Final
+  fecha_rechazo: "Fecha rechazo",
+  fecha_activacion_pedido: "Fecha activación del pedido",
+  fecha_entrega_final: "Fecha de entrega final",
+  usuario_ventas_final: "Usuario Ventas Final",
+};
 
 // ===================================
 // 1. INTERFACES
@@ -80,7 +119,11 @@ const processes: Process[] = [
       },
       {
         title: "Producción | PCP",
-        fields: ["Fecha inicio Producción", "Fecha fin Producción", "Usuario PCP"],
+        fields: [
+          "Fecha inicio Producción",
+          "Fecha fin Producción",
+          "Usuario PCP",
+        ],
         apps: ["SIEMENS Opcenter SC"],
       },
       {
@@ -121,12 +164,20 @@ const processes: Process[] = [
       },
       {
         title: "Administración",
-        fields: ["Costo informado [SI/NO]", "Fecha disponibilidad materiales", "Usuario Administración"],
+        fields: [
+          "Costo informado [SI/NO]",
+          "Fecha disponibilidad materiales",
+          "Usuario Administración",
+        ],
         apps: ["Bejerman ERP"],
       },
       {
         title: "Producción | PCP",
-        fields: ["Fecha inicio Producción", "Fecha fin Producción", "Usuario PCP"],
+        fields: [
+          "Fecha inicio Producción",
+          "Fecha fin Producción",
+          "Usuario PCP",
+        ],
         apps: ["SIEMENS Opcenter SC"],
       },
       {
@@ -177,7 +228,11 @@ const processes: Process[] = [
       },
       {
         title: "Administración",
-        fields: ["Costo informado [SI/NO]", "Fecha disponibilidad materiales",  "Usuario Administración"],
+        fields: [
+          "Costo informado [SI/NO]",
+          "Fecha disponibilidad materiales",
+          "Usuario Administración",
+        ],
         apps: ["Bejerman ERP"],
       },
       {
@@ -284,25 +339,135 @@ const ProcessVisualizer = () => {
   ]);
   const [saleCounter, setSaleCounter] = useState(4);
 
-  const addSale = (processId: string, processName: string) => {
-    const newId = `vta-${String(saleCounter).padStart(3, "0")}`;
-    const newSale: SalesInstance = {
-      id: newId,
-      processId: processId,
-      processName: processName,
+  useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/ventas");
+        if (!response.ok) throw new Error("Error al conectar con el servidor");
+
+        const data = await response.json();
+
+        // 1. Reconstruir SalesInstances
+        const loadedInstances: SalesInstance[] = data.map((row: any) => ({
+          id: row.id,
+          processId: row.process_id,
+          processName: row.process_name || "Proceso Desconocido",
+        }));
+        setSalesInstances(loadedInstances);
+
+        // 2. Reconstruir FieldData (Mapeo complejo DB -> Estructura Visual)
+        const loadedFieldData: FieldData = {};
+
+        data.forEach((row: any) => {
+          loadedFieldData[row.id] = {};
+
+          // Encontrar el proceso para saber qué etapas tiene
+          const processDef = processes.find((p) => p.id === row.process_id);
+          if (!processDef) return;
+
+          processDef.stages.forEach((stage, stageIndex) => {
+            loadedFieldData[row.id][stageIndex] = {};
+
+            // Buscar si las columnas de la DB tienen valores para los campos de esta etapa
+            Object.entries(dbToFrontendMap).forEach(
+              ([dbCol, frontendField]) => {
+                // Si la etapa actual usa este campo y la fila tiene un valor...
+                // (Nota: manejamos la duplicidad de "Factibilidad" verificando si el campo pertenece a la etapa)
+                const cleanField = frontendField.replace(" [SI/NO]", "");
+                if (
+                  stage.fields.some((f) => f.includes(cleanField)) &&
+                  row[dbCol]
+                ) {
+                  loadedFieldData[row.id][stageIndex][cleanField] = row[dbCol];
+                }
+              }
+            );
+          });
+        });
+
+        setFieldData(loadedFieldData);
+
+        // Actualizar el contador para que no se repitan IDs nuevos
+        if (loadedInstances.length > 0) {
+          const maxId = Math.max(
+            ...loadedInstances.map((s) => parseInt(s.id.split("-")[1]) || 0)
+          );
+          setSaleCounter(maxId + 1);
+        }
+      } catch (error) {
+        console.error("Error cargando ventas:", error);
+        toast.error("No se pudo conectar con el servidor de base de datos");
+      }
     };
-    setSalesInstances((prev) => [...prev, newSale]);
-    setSaleCounter((prev) => prev + 1);
-    toast.info(`Nueva venta (${newId}) agregada al proceso: ${processName}`);
+
+    fetchSales();
+  }, []);
+
+  const addSale = async (processId: string, processName: string) => {
+    const newId = `vta-${String(saleCounter).padStart(3, "0")}`;
+
+    try {
+      // 1. Guardar en Base de Datos
+      const response = await fetch("http://localhost:3000/api/ventas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: newId,
+          processId: processId,
+          processName: processName,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al crear venta en DB");
+
+      // 2. Actualizar estado local (solo si la DB respondió OK)
+      const newSale: SalesInstance = {
+        id: newId,
+        processId: processId,
+        processName: processName,
+      };
+      setSalesInstances((prev) => [...prev, newSale]);
+      setSaleCounter((prev) => prev + 1);
+      toast.info(`Nueva venta (${newId}) creada en base de datos.`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al crear la venta. Verifique la conexión.");
+    }
   };
 
-  const removeSale = (saleId: string) => {
-    setSalesInstances((prev) => prev.filter((sale) => sale.id !== saleId));
-    setFieldData((prev) => {
-      const { [saleId]: _, ...rest } = prev;
-      return rest;
-    });
-    toast.warning(`Venta ${saleId} eliminada.`);
+  const removeSale = async (saleId: string) => {
+    // Confirmación simple antes de borrar (opcional pero recomendada)
+    if (
+      !window.confirm(
+        `¿Estás seguro de que quieres eliminar la venta ${saleId} permanentemente?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      // 1. Borrar en Base de Datos
+      const response = await fetch(
+        `http://localhost:3000/api/ventas/${saleId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Error al eliminar en DB");
+
+      // 2. Si salió bien, actualizar el estado visual
+      setSalesInstances((prev) => prev.filter((sale) => sale.id !== saleId));
+      setFieldData((prev) => {
+        const { [saleId]: _, ...rest } = prev;
+        return rest;
+      });
+
+      toast.success(`Venta ${saleId} eliminada correctamente.`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al eliminar. Intente nuevamente.");
+    }
   };
 
   const isStageComplete = (
@@ -320,30 +485,58 @@ const ProcessVisualizer = () => {
     });
   };
 
-  const handleSaveFields = () => {
+  const handleSaveFields = async () => {
     if (!selectedStage) return;
 
     const saleId = selectedStage.processId;
+    const stageName = selectedStage.stage.title;
 
-    const newFieldData = { ...fieldData };
-    if (!newFieldData[saleId]) {
-      newFieldData[saleId] = {};
+    try {
+      // 1. Guardar en Base de Datos
+      const response = await fetch(
+        `http://localhost:3000/api/ventas/${saleId}/stage/${encodeURIComponent(
+          stageName
+        )}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formValues),
+        }
+      );
+
+      if (!response.ok) throw new Error("Error guardando campos");
+
+      // 2. Actualizar estado local (Visualización inmediata)
+      const newFieldData = { ...fieldData };
+      if (!newFieldData[saleId]) {
+        newFieldData[saleId] = {};
+      }
+      if (!newFieldData[saleId][selectedStage.stageIndex]) {
+        newFieldData[saleId][selectedStage.stageIndex] = {};
+      }
+
+      Object.keys(formValues).forEach((fieldKey) => {
+        newFieldData[saleId][selectedStage.stageIndex][fieldKey] =
+          formValues[fieldKey];
+      });
+
+      setFieldData(newFieldData);
+      toast.success("Campos guardados en base de datos");
+      setSelectedStage(null);
+      setFormValues({});
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al guardar. Intente nuevamente.");
     }
-    if (!newFieldData[saleId][selectedStage.stageIndex]) {
-      newFieldData[saleId][selectedStage.stageIndex] = {};
-    }
-
-    Object.keys(formValues).forEach((fieldKey) => {
-      newFieldData[saleId][selectedStage.stageIndex][fieldKey] =
-        formValues[fieldKey];
-    });
-
-    setFieldData(newFieldData);
-    toast.success("Campos guardados correctamente");
-    setSelectedStage(null);
-    setFormValues({});
   };
-
+  const formatValue = (val: string) => {
+    if (!val) return "";
+    // Si tiene una "T" (formato ISO), cortamos ahí
+    if (val.includes("T")) {
+      return val.split("T")[0];
+    }
+    return val;
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* HEADER y ThemeToggle */}
@@ -440,9 +633,9 @@ const ProcessVisualizer = () => {
                         className="border-t bg-muted/20 pt-3 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6"
                       >
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
-                           <span className="text-sm font-bold text-foreground/80">
-                                {sale.id}
-                            </span>
+                          <span className="text-sm font-bold text-foreground/80">
+                            {sale.id}
+                          </span>
                           <Button
                             variant="destructive"
                             size="sm"
@@ -494,8 +687,8 @@ const ProcessVisualizer = () => {
                                       const key = isYesNoField
                                         ? field.replace(" [SI/NO]", "")
                                         : field;
-                                      initialValues[key] =
-                                        freshData[key] || "";
+                                      const rawVal = freshData[key] || "";
+                                      initialValues[key] = formatValue(rawVal);
                                     });
 
                                     setFormValues(initialValues);
@@ -524,7 +717,8 @@ const ProcessVisualizer = () => {
                                         const key = field.includes("[SI/NO]")
                                           ? field.replace(" [SI/NO]", "")
                                           : field;
-                                        const value = currentData[key];
+                                        const rawValue = currentData[key];
+                                        const value = formatValue(rawValue);
                                         return (
                                           <li key={idx} className="text-xs">
                                             {value ? (
@@ -607,7 +801,7 @@ const ProcessVisualizer = () => {
                   ? field.replace(" [SI/NO]", "")
                   : field;
                 const formKey = cleanField;
-
+                // Función auxiliar para limpiar la fecha
                 return (
                   <div key={idx} className="grid gap-1.5 sm:gap-2">
                     <Label
