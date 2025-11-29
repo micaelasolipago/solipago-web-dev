@@ -674,18 +674,28 @@ const ProcessVisualizer = () => {
     });
   };
 
-  // Función de cierre (NO ELIMINA DE DB, solo de la vista)
+  // Función de cierre (AHORA LLAMA AL BACKEND PARA MARCAR COMO CERRADA)
   const completeSale = async (saleId: string) => {
     if (
       !window.confirm(
-        `¿Estás seguro de que quieres CERRAR la venta ${saleId}? Esto la quitará de la vista, pero la mantendrá en la base de datos.`
+        `¿Estás seguro de que quieres CERRAR la venta ${saleId}? Esto la marcará como archivada y la quitará de la vista para todos los usuarios.`
       )
     ) {
       return;
     }
 
     try {
-      // 1. Quitar de la vista (Frontend)
+      // 1. LLAMAR AL BACKEND PARA MARCAR is_closed = TRUE
+      const response = await fetch(
+        `http://localhost:3000/api/ventas/${saleId}/close`,
+        {
+          method: "PUT",
+        }
+      );
+
+      if (!response.ok) throw new Error("Error al marcar como cerrada en DB");
+
+      // 2. Si salió bien en el backend, quitar de la vista (Frontend)
       setSalesInstances((prev) => prev.filter((sale) => sale.id !== saleId));
       setFieldData((prev) => {
         const { [saleId]: _, ...rest } = prev;
@@ -693,16 +703,14 @@ const ProcessVisualizer = () => {
       });
       setExpandedProcess(null); // Colapsar por si acaso
 
-      // 2. Notificación
+      // 3. Notificación
       toast.success(
         `Venta ${saleId} CERRADA. El registro fue conservado en la base de datos.`
       );
     } catch (error) {
-      // Nota: Aquí ya no hay errores de red, solo errores de estado de React.
-      console.error("Error al cerrar venta en frontend:", error);
-      toast.error("Error al cerrar la venta en la vista. Intente nuevamente.");
+      console.error("Error al cerrar venta:", error);
+      toast.error("Error al cerrar la venta. Intente nuevamente.");
     }
-    // ¡IMPORTANTE! NO LLAMA A removeSale NI a ninguna ruta DELETE/PUT.
   };
 
   const handleSaveFields = async () => {

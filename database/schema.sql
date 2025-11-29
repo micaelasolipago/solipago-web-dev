@@ -37,6 +37,8 @@ CREATE TABLE ventas (
     fecha_activacion_pedido DATE,
     fecha_entrega_final DATE,
     usuario_ventas_final VARCHAR(100)
+
+    is_closed BOOLEAN
 );
 
 -- Opcional: Crear un índice para buscar rápido por cliente

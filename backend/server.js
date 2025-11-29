@@ -98,7 +98,7 @@ app.post("/api/login", (req, res) => {
 // GET: Obtener todas las ventas
 app.get("/api/ventas", async (req, res) => {
   try {
-    const result = await query("SELECT * FROM ventas ORDER BY created_at DESC");
+    const result = await query("SELECT * FROM ventas WHERE is_closed = FALSE ORDER BY created_at DESC");
     res.json(result.rows);
   } catch (err) {
     console.error("Error al obtener ventas:", err.stack);
@@ -119,7 +119,7 @@ app.post("/api/ventas", async (req, res) => {
   try {
     const text = `
       INSERT INTO ventas (id, process_id, process_name)
-      VALUES ($1, $2, $3)
+      VALUES ($1, $2, $3, FALSE)
       RETURNING *
     `;
     const values = [id, processId, processName];
@@ -224,6 +224,29 @@ app.delete("/api/ventas/:id", async (req, res) => {
     res.status(500).json({ error: "Error interno al eliminar la venta." });
   }
 });
+
+// PUT: Marcar una venta como cerrada (Quitar de la vista)
+app.put("/api/ventas/:id/close", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Solo actualiza la columna is_closed a TRUE
+    const queryText =
+      "UPDATE ventas SET is_closed = TRUE WHERE id = $1 RETURNING *";
+    const result = await query(queryText, [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Venta no encontrada." });
+    }
+
+    console.log(`🔒 Venta marcada como cerrada: ${id} (CONSERVADA en DB)`);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error al marcar venta como cerrada:", err.stack);
+    res.status(500).json({ error: "Error interno." });
+  }
+});
+
 
 // ===================================
 // INICIO DEL SERVIDOR
