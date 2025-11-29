@@ -10,6 +10,7 @@ import {
   ChevronUp,
   PlusCircle,
   X,
+  Save,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -387,6 +388,7 @@ const LoginComponent = ({
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autocomplete="new-password"
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -440,6 +442,15 @@ const ProcessVisualizer = () => {
     },
   ]);
   const [saleCounter, setSaleCounter] = useState(4);
+
+  // NUEVO: Cargar sesión desde localStorage al montar
+  useEffect(() => {
+    const storedUser = localStorage.getItem("vulcanoUser");
+    if (storedUser) {
+      setCurrentUser({ name: storedUser });
+    }
+    // NOTA: Esta useEffect solo corre una vez al montar, sin dependencias.
+  }, []);
 
   useEffect(() => {
     // Si el usuario no está logueado, no intentamos hacer fetch de ventas
@@ -583,11 +594,115 @@ const ProcessVisualizer = () => {
     const stageData = fieldData[saleId]?.[stageIndex];
     if (!stageData) return false;
 
-    return fields.every((field) => {
+    // Identificar si es la etapa 'Ventas Final'
+    const processId = salesInstances.find((s) => s.id === saleId)?.processId;
+    const isFinalStage =
+      processes.find((p) => p.id === processId)?.stages[stageIndex].title ===
+      "Ventas Final";
+
+    // Lógica para todos los campos de la etapa (excepto los bifurcados que chequearemos aparte)
+    const allOtherFieldsComplete = fields.every((field) => {
       const isYesNoField = field.includes("[SI/NO]");
       const key = isYesNoField ? field.replace(" [SI/NO]", "") : field;
+
+      const fechaRechazoKey = "Fecha rechazo";
+      const fechaActivacionKey = "Fecha activación del pedido";
+      const fechaEntregaFinalKey = "Fecha de entrega final";
+      const usuarioFinalKey = "Usuario Ventas Final"; // El usuario final debe estar siempre.
+
+      // Si estamos en Ventas Final, ignoramos los campos de bifurcación en este primer chequeo
+      if (
+        isFinalStage &&
+        (key === fechaRechazoKey ||
+          key === fechaActivacionKey ||
+          key === fechaEntregaFinalKey)
+      ) {
+        return true;
+      }
+
+      // Chequeo estándar: el campo debe tener valor.
       return stageData[key] && stageData[key].trim() !== "";
     });
+
+    // Lógica ESPECIAL para Ventas Final
+    if (isFinalStage) {
+      const fechaRechazoKey = "Fecha rechazo";
+      const fechaActivacionKey = "Fecha activación del pedido";
+      const fechaEntregaFinalKey = "Fecha de entrega final";
+      const usuarioFinalKey = "Usuario Ventas Final";
+
+      const rechazoLleno = !!stageData[fechaRechazoKey];
+      const activacionLleno = !!stageData[fechaActivacionKey];
+      const entregaLleno = !!stageData[fechaEntregaFinalKey];
+      const usuarioLleno = !!stageData[usuarioFinalKey];
+
+      // -----------------------------------------------------
+      // CONDICIÓN 1: RECHAZO (XOR)
+      // Fecha rechazo lleno Y (Fecha activación y Fecha entrega final) VACÍOS
+      const isRejectedComplete =
+        rechazoLleno && !activacionLleno && !entregaLleno && usuarioLleno;
+
+      // -----------------------------------------------------
+      // CONDICIÓN 2: ACTIVACIÓN + ENTREGA (XOR)
+      // (Fecha activación Y Fecha entrega final) LLENOS Y Fecha rechazo VACÍO
+      const isActivatedComplete =
+        !rechazoLleno && activacionLleno && entregaLleno && usuarioLleno;
+
+      // -----------------------------------------------------
+      // El proceso está completo si cumple una de las dos condiciones
+      const isBifurcationValid = isRejectedComplete || isActivatedComplete;
+
+      // La etapa final está completa si:
+      // 1. La bifurcación es válida.
+      // 2. Todos los demás campos (que no son los de fecha/bifurcación) están completos.
+      return isBifurcationValid && allOtherFieldsComplete;
+    }
+
+    // Lógica estándar para TODAS LAS DEMÁS etapas
+    return allOtherFieldsComplete;
+  };
+
+  // NUEVA FUNCIÓN: Verifica si TODAS las etapas están completas.
+  const isSaleFullyComplete = (saleId: string, process: Process) => {
+    // Si la venta no tiene datos cargados, no está completa.
+    if (!fieldData[saleId]) return false;
+
+    // Iterar sobre TODAS las etapas del proceso
+    return process.stages.every((stage, stageIndex) => {
+      // Reutiliza la función isStageComplete para cada etapa
+      return isStageComplete(saleId, stageIndex, stage.fields);
+    });
+  };
+
+  // Función de cierre (NO ELIMINA DE DB, solo de la vista)
+  const completeSale = async (saleId: string) => {
+    if (
+      !window.confirm(
+        `¿Estás seguro de que quieres CERRAR la venta ${saleId}? Esto la quitará de la vista, pero la mantendrá en la base de datos.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      // 1. Quitar de la vista (Frontend)
+      setSalesInstances((prev) => prev.filter((sale) => sale.id !== saleId));
+      setFieldData((prev) => {
+        const { [saleId]: _, ...rest } = prev;
+        return rest;
+      });
+      setExpandedProcess(null); // Colapsar por si acaso
+
+      // 2. Notificación
+      toast.success(
+        `Venta ${saleId} CERRADA. El registro fue conservado en la base de datos.`
+      );
+    } catch (error) {
+      // Nota: Aquí ya no hay errores de red, solo errores de estado de React.
+      console.error("Error al cerrar venta en frontend:", error);
+      toast.error("Error al cerrar la venta en la vista. Intente nuevamente.");
+    }
+    // ¡IMPORTANTE! NO LLAMA A removeSale NI a ninguna ruta DELETE/PUT.
   };
 
   const handleSaveFields = async () => {
@@ -650,11 +765,13 @@ const ProcessVisualizer = () => {
   if (!currentUser.name) {
     return (
       <LoginComponent
-        onLoginSuccess={(userName) => setCurrentUser({ name: userName })}
+        onLoginSuccess={(userName) => {
+          localStorage.setItem("vulcanoUser", userName); // <-- GUARDAR AQUÍ
+          setCurrentUser({ name: userName });
+        }}
       />
     );
   }
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* HEADER y ThemeToggle */}
@@ -678,6 +795,7 @@ const ProcessVisualizer = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => {
+                  localStorage.removeItem("vulcanoUser"); // <-- ELIMINAR AQUÍ
                   setCurrentUser({ name: null }); // Logout
                   setExpandedProcess(null); // Colapsar todo
                   setSalesInstances([]); // Limpiar la vista
@@ -770,21 +888,43 @@ const ProcessVisualizer = () => {
                         key={sale.id}
                         className="border-t bg-muted/20 pt-3 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6"
                       >
+                        {/* ProcessVisualizer.tsx (Estructura de botones) */}
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
                           <span className="text-sm font-bold text-foreground/80">
                             {sale.id}
                           </span>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => removeSale(sale.id)}
-                            className="text-xs sm:text-sm"
-                          >
-                            <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                            <span className="hidden xs:inline">Eliminar</span>
-                          </Button>
-                        </div>
+                          {/* === Botones de Acción (Cerrar y Eliminar) === */}
+                          <div className="flex gap-2">
+                            {/* Botón de Cierre */}
+                            <Button
+                              variant="default"
+                              size="sm"
+                              // HABILITAR: Si TODAS las etapas de ese proceso están completas
+                              disabled={
+                                !isSaleFullyComplete(sale.id, saleProcess)
+                              }
+                              onClick={() => completeSale(sale.id)}
+                              className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
+                            >
+                              <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                              <span className="hidden xs:inline">
+                                Cerrar Venta
+                              </span>
+                            </Button>
 
+                            {/* Botón de Eliminación */}
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => removeSale(sale.id)}
+                              className="text-xs sm:text-sm"
+                            >
+                              <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                              <span className="hidden xs:inline">Eliminar</span>
+                            </Button>
+                          </div>
+                          {/* =================================================== */}
+                        </div>
                         {/* FILA DE ETAPAS */}
                         <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
                           {saleProcess.stages.map((stage, index) => {
@@ -793,6 +933,7 @@ const ProcessVisualizer = () => {
                               index,
                               stage.fields
                             );
+                            // Las clases CSS 'bg-stage-complete/20 border-stage-complete' deben estar definidas en tu CSS global o tailwind config.
                             const cardClasses = isComplete
                               ? "bg-stage-complete/20 border-stage-complete"
                               : "bg-stage-pending/20 border-stage-pending";
@@ -952,7 +1093,7 @@ const ProcessVisualizer = () => {
                   : field;
                 const formKey = cleanField;
 
-                // === NUEVA LÓGICA DE SOLO LECTURA ===
+                // === LÓGICA DE SOLO LECTURA ===
                 const isUserField = formKey.includes("Usuario");
                 const isDisabled = isUserField && !!formValues[formKey]; // Deshabilitar si es campo Usuario y ya tiene valor.
                 // ===================================
