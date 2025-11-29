@@ -8,6 +8,63 @@ import { mapFieldToColumn } from "./utils.js"; // Importamos la utilidad
 const app = express();
 const port = process.env.SERVER_PORT || 3000;
 
+// Función simulada para verificar credenciales (REEMPLAZAR en un entorno real)
+const verifyCredentials = (username, password) => {
+  // Simulación: Si el usuario es 'admin' y la contraseña es 'pass123', es válido.
+  // Cualquier otra combinación es 'invitado' para ver la lógica de roles.
+  if (username === "roberto" && password === "roberto123") {
+    // En una BD real, se devolvería el nombre completo del usuario y su rol.
+    return {
+      success: true,
+      username: "Administrador Principal",
+      role: "admin",
+    };
+  }
+
+  if (username === "carlos" && password === "carlos123") {
+    return {
+      success: true,
+      username: "Carlos",
+      role: "user",
+    };
+  }
+
+  if (username === "gabriel" && password === "gabriel123") {
+    return {
+      success: true,
+      username: "Gabriel",
+      role: "user",
+    };
+  }
+
+  if (username === "anibal" && password === "anibal123") {
+    return {
+      success: true,
+      username: "Anibal",
+      role: "user",
+    };
+  }
+
+  if (username === "sofia" && password === "sofia123") {
+    return {
+      success: true,
+      username: "Sofia",
+      role: "user",
+    };
+  }
+
+  if (username === "eduardo" && password === "eduardo123") {
+    return {
+      success: true,
+      username: "Eduardo PROPYMES",
+      role: "user",
+    };
+  }
+
+  // Simular un fallo
+  return { success: false, error: "Credenciales inválidas" };
+};
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -15,6 +72,28 @@ app.use(express.json());
 // ===================================
 // RUTAS API
 // ===================================
+
+// NUEVA RUTA: POST para simular el inicio de sesión
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ error: "Se requiere nombre de usuario y contraseña." });
+  }
+
+  const authResult = verifyCredentials(username, password);
+
+  if (authResult.success) {
+    res.json({
+      message: "Login exitoso",
+      user: authResult.username, // Devolvemos el nombre del usuario
+    });
+  } else {
+    res.status(401).json({ error: authResult.error });
+  }
+});
 
 // GET: Obtener todas las ventas
 app.get("/api/ventas", async (req, res) => {
@@ -95,11 +174,9 @@ app.put("/api/ventas/:id/stage/:stageName", async (req, res) => {
   });
 
   if (setClauses.length === 0) {
-    return res
-      .status(400)
-      .json({
-        error: "Ninguno de los campos enviados corresponde a columnas válidas.",
-      });
+    return res.status(400).json({
+      error: "Ninguno de los campos enviados corresponde a columnas válidas.",
+    });
   }
 
   // Agregamos el ID al final de los valores para el WHERE

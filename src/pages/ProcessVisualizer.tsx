@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect } from "react";
+import React from "react"; // Importar React para React.FormEvent
 
 // ===================================
 // MAPA DE TRADUCCIÓN (DB -> Frontend)
@@ -96,6 +97,11 @@ interface SalesInstance {
   id: string;
   processId: string;
   processName: string;
+}
+
+// NUEVA INTERFAZ PARA EL ESTADO DEL USUARIO
+interface UserState {
+  name: string | null;
 }
 
 // ===================================
@@ -300,6 +306,99 @@ const getAppStyles = (appName: string): { className?: string } => {
   }
 };
 
+// -----------------------------------
+// NUEVO: Componente para la pantalla de Login
+// -----------------------------------
+const LoginComponent = ({
+  onLoginSuccess,
+}: {
+  onLoginSuccess: (userName: string) => void;
+}) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(`Bienvenido, ${data.user}.`);
+        onLoginSuccess(data.user); // Llama a la función de éxito para actualizar el estado principal
+      } else {
+        setError(data.error || "Error de conexión con el servidor.");
+        toast.error(data.error || "Error al iniciar sesión.");
+      }
+    } catch (err) {
+      console.error("Error de red durante el login:", err);
+      setError("Error de red. Intente más tarde.");
+      toast.error("No se pudo conectar con el servidor.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-muted/40">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl text-red-600 font-extrabold tracking-wide">
+            Vulcano Login ⚙️
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Ingrese sus credenciales para acceder al sistema.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="grid gap-4">
+            {error && (
+              <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                {error}
+              </div>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="username">Usuario</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="ingrese su usuario"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="ingrese su contraseña"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Cargando..." : "Iniciar Sesión"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 // ===================================
 // 4. COMPONENTE PRINCIPAL
 // ===================================
@@ -314,6 +413,9 @@ const ProcessVisualizer = () => {
   const [expandedProcess, setExpandedProcess] = useState<string | null>("p1");
   const [fieldData, setFieldData] = useState<FieldData>({});
   const [formValues, setFormValues] = useState<{ [key: string]: string }>({});
+
+  // NUEVO ESTADO DE USUARIO
+  const [currentUser, setCurrentUser] = useState<UserState>({ name: null });
 
   const [salesInstances, setSalesInstances] = useState<SalesInstance[]>([
     {
@@ -340,6 +442,9 @@ const ProcessVisualizer = () => {
   const [saleCounter, setSaleCounter] = useState(4);
 
   useEffect(() => {
+    // Si el usuario no está logueado, no intentamos hacer fetch de ventas
+    if (!currentUser.name) return;
+
     const fetchSales = async () => {
       try {
         const response = await fetch("http://localhost:3000/api/ventas");
@@ -401,7 +506,7 @@ const ProcessVisualizer = () => {
     };
 
     fetchSales();
-  }, []);
+  }, [currentUser.name]); // Dependencia agregada para recargar al iniciar sesión
 
   const addSale = async (processId: string, processName: string) => {
     const newId = `vta-${String(saleCounter).padStart(3, "0")}`;
@@ -488,6 +593,7 @@ const ProcessVisualizer = () => {
   const handleSaveFields = async () => {
     if (!selectedStage) return;
 
+    // Nota: El processId en selectedStage en realidad contiene el ID de la Venta (sale.id)
     const saleId = selectedStage.processId;
     const stageName = selectedStage.stage.title;
 
@@ -537,6 +643,18 @@ const ProcessVisualizer = () => {
     }
     return val;
   };
+
+  // -----------------------------------
+  // RENDERIZADO CONDICIONAL DE LOGIN
+  // -----------------------------------
+  if (!currentUser.name) {
+    return (
+      <LoginComponent
+        onLoginSuccess={(userName) => setCurrentUser({ name: userName })}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* HEADER y ThemeToggle */}
@@ -551,7 +669,27 @@ const ProcessVisualizer = () => {
                 Sistema de gestión comercial
               </p>
             </div>
-            <ThemeToggle />
+            {/* NUEVO: Mostrar usuario y opción de Logout */}
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground hidden sm:block">
+                Hola, {currentUser.name}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setCurrentUser({ name: null }); // Logout
+                  setExpandedProcess(null); // Colapsar todo
+                  setSalesInstances([]); // Limpiar la vista
+                  setFieldData({}); // Limpiar datos
+                  toast.info("Sesión cerrada.");
+                }}
+                className="text-xs sm:text-sm"
+              >
+                Cerrar Sesión
+              </Button>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>
@@ -688,12 +826,24 @@ const ProcessVisualizer = () => {
                                         ? field.replace(" [SI/NO]", "")
                                         : field;
                                       const rawVal = freshData[key] || "";
-                                      initialValues[key] = formatValue(rawVal);
+
+                                      // === LÓGICA DE AUTO-COMPLETADO ===
+                                      if (
+                                        key.includes("Usuario") &&
+                                        rawVal === "" &&
+                                        currentUser.name
+                                      ) {
+                                        initialValues[key] = currentUser.name;
+                                      } else {
+                                        initialValues[key] =
+                                          formatValue(rawVal);
+                                      }
+                                      // =================================
                                     });
 
                                     setFormValues(initialValues);
                                     setSelectedStage({
-                                      processId: sale.id,
+                                      processId: sale.id, // Esto es el sale.id (vta-00X)
                                       processName: sale.processName,
                                       stageIndex: index,
                                       stage,
@@ -801,6 +951,12 @@ const ProcessVisualizer = () => {
                   ? field.replace(" [SI/NO]", "")
                   : field;
                 const formKey = cleanField;
+
+                // === NUEVA LÓGICA DE SOLO LECTURA ===
+                const isUserField = formKey.includes("Usuario");
+                const isDisabled = isUserField && !!formValues[formKey]; // Deshabilitar si es campo Usuario y ya tiene valor.
+                // ===================================
+
                 // Función auxiliar para limpiar la fecha
                 return (
                   <div key={idx} className="grid gap-1.5 sm:gap-2">
@@ -809,6 +965,14 @@ const ProcessVisualizer = () => {
                       className="text-xs sm:text-sm"
                     >
                       {cleanField}
+                      {isDisabled && (
+                        <Badge
+                          variant="secondary"
+                          className="ml-2 text-[10px] py-0 px-1 font-normal"
+                        >
+                          Bloqueado
+                        </Badge>
+                      )}
                     </Label>
 
                     {isYesNoField ? (
@@ -841,6 +1005,8 @@ const ProcessVisualizer = () => {
                           }))
                         }
                         placeholder={cleanField}
+                        // === APLICAR EL ATRIBUTO DISABLED ===
+                        disabled={isDisabled}
                       />
                     )}
                   </div>
