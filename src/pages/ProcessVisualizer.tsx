@@ -506,9 +506,17 @@ const ProcessVisualizer = () => {
         // Actualizar el contador para que no se repitan IDs nuevos
         if (loadedInstances.length > 0) {
           const maxId = Math.max(
-            ...loadedInstances.map((s) => parseInt(s.id.split("-")[1]) || 0)
+            ...loadedInstances.map((s) => {
+              // Extraer solo la parte numérica (e.g., de 'vta-004' obtener 4)
+              const numPart = s.id.split("-").pop();
+              return parseInt(numPart || "0", 10) || 0;
+            })
           );
+          // Aseguramos que el próximo ID a generar sea el siguiente número.
           setSaleCounter(maxId + 1);
+        } else {
+          // Si no hay ventas, reiniciamos el contador a 1.
+          setSaleCounter(1);
         }
       } catch (error) {
         console.error("Error cargando ventas:", error);

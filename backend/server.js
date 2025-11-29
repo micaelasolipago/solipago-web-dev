@@ -126,7 +126,7 @@ app.post("/api/ventas", async (req, res) => {
 
   try {
     const text = `
-      INSERT INTO ventas (id, process_id, process_name)
+      INSERT INTO ventas (id, process_id, process_name, is_closed)
       VALUES ($1, $2, $3, FALSE)
       RETURNING *
     `;
