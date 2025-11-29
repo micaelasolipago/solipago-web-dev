@@ -61,6 +61,14 @@ const verifyCredentials = (username, password) => {
     };
   }
 
+  if (username === "mica" && password === "mica123") {
+    return {
+      success: true,
+      username: "Micaela",
+      role: "user",
+    };
+  }
+
   // Simular un fallo
   return { success: false, error: "Credenciales inválidas" };
 };
