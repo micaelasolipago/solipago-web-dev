@@ -479,6 +479,8 @@ const ProcessVisualizer = () => {
     stage: ProcessStage;
   } | null>(null);
 
+  const [filtroClienteCerrado, setFiltroClienteCerrado] = useState("");
+  const [filtroProductoCerrado, setFiltroProductoCerrado] = useState("");
   const [expandedProcess, setExpandedProcess] = useState<string | null>("p1");
   const [fieldData, setFieldData] = useState<FieldData>({});
   const [formValues, setFormValues] = useState<{ [key: string]: string }>({});
@@ -1161,27 +1163,43 @@ const ProcessVisualizer = () => {
               <div className="border-t bg-muted/20 px-4 sm:px-6 py-6">
                 {/* Cabecera con Título y Filtros */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-                  <div>
-                    
-                  </div>
+                  <div></div>
 
-                  {/* Filtros Placeholder */}
+                  {/* Filtros ACTIVOS para Ventas Cerradas */}
                   <div className="flex gap-2">
                     <div className="w-[200px]">
                       <Input
                         placeholder="Buscar cliente..."
                         className="h-8 text-xs"
+                        value={filtroClienteCerrado}
+                        onChange={(e) =>
+                          setFiltroClienteCerrado(e.target.value)
+                        }
                       />
                     </div>
                     <div className="w-[200px]">
                       <Input
                         placeholder="Buscar producto..."
                         className="h-8 text-xs"
+                        value={filtroProductoCerrado}
+                        onChange={(e) =>
+                          setFiltroProductoCerrado(e.target.value)
+                        }
                       />
                     </div>
-                    <Button variant="outline" size="sm" className="h-8 mt-auto">
+                    {/* El botón es decorativo si el filtro es automático al escribir, 
+      pero puedes dejarlo si quieres limpiar los filtros o refrescar */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 mt-auto"
+                      onClick={() => {
+                        setFiltroClienteCerrado("");
+                        setFiltroProductoCerrado("");
+                      }}
+                    >
                       <Filter className="w-3 h-3 mr-1" />
-                      Filtrar
+                      Limpiar
                     </Button>
                   </div>
                 </div>
@@ -1237,56 +1255,81 @@ const ProcessVisualizer = () => {
                         </tr>
                       </thead>
                       <tbody className="[&_tr:last-child]:border-0">
-                        {closedVentas.map((sale) => (
-                          <tr
-                            key={sale.id}
-                            className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                          >
-                            <td className="p-2 align-middle font-medium whitespace-nowrap">
-                              {sale.id}
-                            </td>
-                            <td className="p-2 align-middle">
-                              {sale.clienteName || "-"}
-                            </td>
-                            <td className="p-2 align-middle">
-                              {sale.productoName || "-"}
-                            </td>
-                            <td className="p-2 align-middle">
-                              <Badge
-                                variant="outline"
-                                className="font-normal text-[10px] whitespace-nowrap"
-                              >
-                                {sale.processName}
-                              </Badge>
-                            </td>
+                        {closedVentas
+                          .filter((sale) => {
+                            // 1. Normalizar textos para ignorar mayúsculas/minúsculas
+                            const searchClient =
+                              filtroClienteCerrado.toLowerCase();
+                            const searchProduct =
+                              filtroProductoCerrado.toLowerCase();
 
-                            {/* Fechas Centradas */}
-                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10">
-                              {formatDate(sale.fechaActivacionPedido)}
-                            </td>
-                            <td className="p-2 align-middle text-center bg-blue-50/30 dark:bg-blue-900/10 font-medium">
-                              {formatDate(sale.fechaEntregaRequerida)}
-                            </td>
-                            <td className="p-2 align-middle text-center">
-                              {formatDate(sale.fechaInicioDiseno)}
-                            </td>
-                            <td className="p-2 align-middle text-center">
-                              {formatDate(sale.fechaFinDiseno)}
-                            </td>
-                            <td className="p-2 align-middle text-center">
-                              {formatDate(sale.fechaDispMateriales)}
-                            </td>
-                            <td className="p-2 align-middle text-center">
-                              {formatDate(sale.fechaInicioProduccion)}
-                            </td>
-                            <td className="p-2 align-middle text-center">
-                              {formatDate(sale.fechaFinProduccion)}
-                            </td>
-                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10 font-bold">
-                              {formatDate(sale.fechaEntregaFinal)}
-                            </td>
-                          </tr>
-                        ))}
+                            const clientName = sale.clienteName
+                              ? sale.clienteName.toLowerCase()
+                              : "";
+                            const productName = sale.productoName
+                              ? sale.productoName.toLowerCase()
+                              : "";
+
+                            // 2. Verificar coincidencias (si el filtro está vacío, pasa siempre)
+                            const matchClient =
+                              !searchClient ||
+                              clientName.includes(searchClient);
+                            const matchProduct =
+                              !searchProduct ||
+                              productName.includes(searchProduct);
+
+                            return matchClient && matchProduct;
+                          })
+                          .map((sale) => (
+                            <tr
+                              key={sale.id}
+                              className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                            >
+                              <td className="p-2 align-middle font-medium whitespace-nowrap">
+                                {sale.id}
+                              </td>
+                              <td className="p-2 align-middle">
+                                {sale.clienteName || "-"}
+                              </td>
+                              <td className="p-2 align-middle">
+                                {sale.productoName || "-"}
+                              </td>
+                              <td className="p-2 align-middle">
+                                <Badge
+                                  variant="outline"
+                                  className="font-normal text-[10px] whitespace-nowrap"
+                                >
+                                  {sale.processName}
+                                </Badge>
+                              </td>
+
+                              {/* Fechas Centradas */}
+                              <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10">
+                                {formatDate(sale.fechaActivacionPedido)}
+                              </td>
+                              <td className="p-2 align-middle text-center bg-blue-50/30 dark:bg-blue-900/10 font-medium">
+                                {formatDate(sale.fechaEntregaRequerida)}
+                              </td>
+                              <td className="p-2 align-middle text-center">
+                                {formatDate(sale.fechaInicioDiseno)}
+                              </td>
+                              <td className="p-2 align-middle text-center">
+                                {formatDate(sale.fechaFinDiseno)}
+                              </td>
+                              <td className="p-2 align-middle text-center">
+                                {formatDate(sale.fechaDispMateriales)}
+                              </td>
+                              <td className="p-2 align-middle text-center">
+                                {formatDate(sale.fechaInicioProduccion)}
+                              </td>
+                              <td className="p-2 align-middle text-center">
+                                {formatDate(sale.fechaFinProduccion)}
+                              </td>
+                              <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10 font-bold">
+                                {formatDate(sale.fechaEntregaFinal)}
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
