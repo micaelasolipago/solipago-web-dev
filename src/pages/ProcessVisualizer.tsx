@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   PlusCircle,
   X,
   Save,
+  Filter, // Importamos Filter para el ícono de filtros
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -29,8 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect } from "react";
-import React from "react"; // Importar React para React.FormEvent
 
 // ===================================
 // MAPA DE TRADUCCIÓN (DB -> Frontend)
@@ -98,6 +97,20 @@ interface SalesInstance {
   id: string;
   processId: string;
   processName: string;
+}
+
+// NUEVA: Interfaz para los datos de la tabla de ventas cerradas
+interface ClosedSaleData extends SalesInstance {
+  clienteName: string;
+  productoName: string;
+  fechaEntregaRequerida: string;
+  fechaInicioDiseno: string;
+  fechaFinDiseno: string;
+  fechaDispMateriales: string;
+  fechaInicioProduccion: string;
+  fechaFinProduccion: string;
+  fechaActivacionPedido: string;
+  fechaEntregaFinal: string;
 }
 
 // NUEVA INTERFAZ PARA EL ESTADO DEL USUARIO
@@ -308,7 +321,7 @@ const getAppStyles = (appName: string): { className?: string } => {
 };
 
 // -----------------------------------
-// NUEVO: Componente para la pantalla de Login
+// COMPONENTE LOGIN
 // -----------------------------------
 const LoginComponent = ({
   onLoginSuccess,
@@ -336,7 +349,7 @@ const LoginComponent = ({
 
       if (response.ok) {
         toast.success(`Bienvenido, ${data.user}.`);
-        onLoginSuccess(data.user); // Llama a la función de éxito para actualizar el estado principal
+        onLoginSuccess(data.user);
       } else {
         setError(data.error || "Error de conexión con el servidor.");
         toast.error(data.error || "Error al iniciar sesión.");
@@ -388,7 +401,7 @@ const LoginComponent = ({
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autocomplete="new-password"
+                autoComplete="new-password"
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -412,126 +425,148 @@ const ProcessVisualizer = () => {
     stageIndex: number;
     stage: ProcessStage;
   } | null>(null);
+
   const [expandedProcess, setExpandedProcess] = useState<string | null>("p1");
   const [fieldData, setFieldData] = useState<FieldData>({});
   const [formValues, setFormValues] = useState<{ [key: string]: string }>({});
 
-  // NUEVO ESTADO DE USUARIO
   const [currentUser, setCurrentUser] = useState<UserState>({ name: null });
 
-  const [salesInstances, setSalesInstances] = useState<SalesInstance[]>([
-    {
-      id: "vta-001",
-      processId: "p1",
-      processName:
-        processes.find((p) => p.id === "p1")?.name || "Producto estándar",
-    },
-    {
-      id: "vta-002",
-      processId: "p3",
-      processName:
-        processes.find((p) => p.id === "p3")?.name ||
-        "Producto especial con Ingeniería Adaptada",
-    },
-    {
-      id: "vta-003",
-      processId: "p4",
-      processName:
-        processes.find((p) => p.id === "p4")?.name ||
-        "Producto especial con Ingeniería a medida",
-    },
-  ]);
+  // ESTADO PARA VENTAS CERRADAS
+  const [closedVentas, setClosedVentas] = useState<ClosedSaleData[]>([]);
+
+  const [salesInstances, setSalesInstances] = useState<SalesInstance[]>([]);
   const [saleCounter, setSaleCounter] = useState(4);
 
-  // NUEVO: Cargar sesión desde localStorage al montar
+  // Helper para formatear fecha (quitar la T)
+  const formatValue = (val: string) => {
+    if (!val) return "";
+    if (val.includes("T")) {
+      return val.split("T")[0];
+    }
+    return val;
+  };
+
+  // -------------------------
+  // FUNCIONES DE FETCHING
+  // -------------------------
+
+  // Obtener ventas cerradas
+  const fetchClosedVentas = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/ventas/cerradas`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch closed ventas");
+      }
+      const data = await response.json();
+      
+      // Mapeamos los datos de la DB a nuestra interfaz ClosedSaleData
+      const mappedData: ClosedSaleData[] = data.map((row: any) => ({
+        id: row.id,
+        processId: row.process_id,
+        processName: row.process_name || "Proceso Desconocido",
+        clienteName: row.cliente_nombre,
+        productoName: row.producto_nombre,
+        fechaEntregaRequerida: formatValue(row.fecha_entrega_requerida || ""),
+        fechaInicioDiseno: formatValue(row.fecha_inicio_diseno || ""),
+        fechaFinDiseno: formatValue(row.fecha_fin_diseno || ""),
+        fechaDispMateriales: formatValue(row.fecha_disponibilidad_materiales || ""),
+        fechaInicioProduccion: formatValue(row.fecha_inicio_produccion || ""),
+        fechaFinProduccion: formatValue(row.fecha_fin_produccion || ""),
+        fechaActivacionPedido: formatValue(row.fecha_activacion_pedido || ""),
+        fechaEntregaFinal: formatValue(row.fecha_entrega_final || "")
+      }));
+
+      setClosedVentas(mappedData);
+    } catch (error) {
+      console.error("Error fetching closed ventas:", error);
+    }
+  };
+
+  // Obtener ventas abiertas (activos)
+  const fetchSales = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/ventas");
+      if (!response.ok) throw new Error("Error al conectar con el servidor");
+
+      const data = await response.json();
+
+      // 1. Reconstruir SalesInstances
+      const loadedInstances: SalesInstance[] = data.map((row: any) => ({
+        id: row.id,
+        processId: row.process_id,
+        processName: row.process_name || "Proceso Desconocido",
+      }));
+      setSalesInstances(loadedInstances);
+
+      // 2. Reconstruir FieldData
+      const loadedFieldData: FieldData = {};
+
+      data.forEach((row: any) => {
+        loadedFieldData[row.id] = {};
+        const processDef = processes.find((p) => p.id === row.process_id);
+        if (!processDef) return;
+
+        processDef.stages.forEach((stage, stageIndex) => {
+          loadedFieldData[row.id][stageIndex] = {};
+          Object.entries(dbToFrontendMap).forEach(([dbCol, frontendField]) => {
+            const cleanField = frontendField.replace(" [SI/NO]", "");
+            if (
+              stage.fields.some((f) => f.includes(cleanField)) &&
+              row[dbCol]
+            ) {
+              loadedFieldData[row.id][stageIndex][cleanField] = row[dbCol];
+            }
+          });
+        });
+      });
+
+      setFieldData(loadedFieldData);
+
+      // Actualizar contador
+      if (loadedInstances.length > 0) {
+        const maxId = Math.max(
+          ...loadedInstances.map((s) => {
+            const numPart = s.id.split("-").pop();
+            return parseInt(numPart || "0", 10) || 0;
+          })
+        );
+        setSaleCounter(maxId + 1);
+      } else {
+        setSaleCounter(1);
+      }
+    } catch (error) {
+      console.error("Error cargando ventas:", error);
+      toast.error("No se pudo conectar con el servidor de base de datos");
+    }
+  };
+
+  // -------------------------
+  // USE EFFECTS
+  // -------------------------
+
   useEffect(() => {
     const storedUser = localStorage.getItem("vulcanoUser");
     if (storedUser) {
       setCurrentUser({ name: storedUser });
     }
-    // NOTA: Esta useEffect solo corre una vez al montar, sin dependencias.
   }, []);
 
   useEffect(() => {
-    // Si el usuario no está logueado, no intentamos hacer fetch de ventas
     if (!currentUser.name) return;
 
-    const fetchSales = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/ventas");
-        if (!response.ok) throw new Error("Error al conectar con el servidor");
-
-        const data = await response.json();
-
-        // 1. Reconstruir SalesInstances
-        const loadedInstances: SalesInstance[] = data.map((row: any) => ({
-          id: row.id,
-          processId: row.process_id,
-          processName: row.process_name || "Proceso Desconocido",
-        }));
-        setSalesInstances(loadedInstances);
-
-        // 2. Reconstruir FieldData (Mapeo complejo DB -> Estructura Visual)
-        const loadedFieldData: FieldData = {};
-
-        data.forEach((row: any) => {
-          loadedFieldData[row.id] = {};
-
-          // Encontrar el proceso para saber qué etapas tiene
-          const processDef = processes.find((p) => p.id === row.process_id);
-          if (!processDef) return;
-
-          processDef.stages.forEach((stage, stageIndex) => {
-            loadedFieldData[row.id][stageIndex] = {};
-
-            // Buscar si las columnas de la DB tienen valores para los campos de esta etapa
-            Object.entries(dbToFrontendMap).forEach(
-              ([dbCol, frontendField]) => {
-                // Si la etapa actual usa este campo y la fila tiene un valor...
-                // (Nota: manejamos la duplicidad de "Factibilidad" verificando si el campo pertenece a la etapa)
-                const cleanField = frontendField.replace(" [SI/NO]", "");
-                if (
-                  stage.fields.some((f) => f.includes(cleanField)) &&
-                  row[dbCol]
-                ) {
-                  loadedFieldData[row.id][stageIndex][cleanField] = row[dbCol];
-                }
-              }
-            );
-          });
-        });
-
-        setFieldData(loadedFieldData);
-
-        // Actualizar el contador para que no se repitan IDs nuevos
-        if (loadedInstances.length > 0) {
-          const maxId = Math.max(
-            ...loadedInstances.map((s) => {
-              // Extraer solo la parte numérica (e.g., de 'vta-004' obtener 4)
-              const numPart = s.id.split("-").pop();
-              return parseInt(numPart || "0", 10) || 0;
-            })
-          );
-          // Aseguramos que el próximo ID a generar sea el siguiente número.
-          setSaleCounter(maxId + 1);
-        } else {
-          // Si no hay ventas, reiniciamos el contador a 1.
-          setSaleCounter(1);
-        }
-      } catch (error) {
-        console.error("Error cargando ventas:", error);
-        toast.error("No se pudo conectar con el servidor de base de datos");
-      }
-    };
-
     fetchSales();
-  }, [currentUser.name]); // Dependencia agregada para recargar al iniciar sesión
+    fetchClosedVentas(); // Cargar también ventas cerradas
+  }, [currentUser.name]);
+
+  // -------------------------
+  // ACCIONES
+  // -------------------------
 
   const addSale = async (processId: string, processName: string) => {
     const newId = `vta-${String(saleCounter).padStart(3, "0")}`;
 
     try {
-      // 1. Guardar en Base de Datos
       const response = await fetch("http://localhost:3000/api/ventas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -544,7 +579,6 @@ const ProcessVisualizer = () => {
 
       if (!response.ok) throw new Error("Error al crear venta en DB");
 
-      // 2. Actualizar estado local (solo si la DB respondió OK)
       const newSale: SalesInstance = {
         id: newId,
         processId: processId,
@@ -560,7 +594,6 @@ const ProcessVisualizer = () => {
   };
 
   const removeSale = async (saleId: string) => {
-    // Confirmación simple antes de borrar (opcional pero recomendada)
     if (
       !window.confirm(
         `¿Estás seguro de que quieres eliminar la venta ${saleId} permanentemente?`
@@ -570,7 +603,6 @@ const ProcessVisualizer = () => {
     }
 
     try {
-      // 1. Borrar en Base de Datos
       const response = await fetch(
         `http://localhost:3000/api/ventas/${saleId}`,
         {
@@ -580,7 +612,6 @@ const ProcessVisualizer = () => {
 
       if (!response.ok) throw new Error("Error al eliminar en DB");
 
-      // 2. Si salió bien, actualizar el estado visual
       setSalesInstances((prev) => prev.filter((sale) => sale.id !== saleId));
       setFieldData((prev) => {
         const { [saleId]: _, ...rest } = prev;
@@ -594,106 +625,16 @@ const ProcessVisualizer = () => {
     }
   };
 
-  const isStageComplete = (
-    saleId: string,
-    stageIndex: number,
-    fields: string[]
-  ) => {
-    const stageData = fieldData[saleId]?.[stageIndex];
-    if (!stageData) return false;
-
-    // Identificar si es la etapa 'Ventas Final'
-    const processId = salesInstances.find((s) => s.id === saleId)?.processId;
-    const isFinalStage =
-      processes.find((p) => p.id === processId)?.stages[stageIndex].title ===
-      "Ventas Final";
-
-    // Lógica para todos los campos de la etapa (excepto los bifurcados que chequearemos aparte)
-    const allOtherFieldsComplete = fields.every((field) => {
-      const isYesNoField = field.includes("[SI/NO]");
-      const key = isYesNoField ? field.replace(" [SI/NO]", "") : field;
-
-      const fechaRechazoKey = "Fecha rechazo";
-      const fechaActivacionKey = "Fecha activación del pedido";
-      const fechaEntregaFinalKey = "Fecha de entrega final";
-      const usuarioFinalKey = "Usuario Ventas Final"; // El usuario final debe estar siempre.
-
-      // Si estamos en Ventas Final, ignoramos los campos de bifurcación en este primer chequeo
-      if (
-        isFinalStage &&
-        (key === fechaRechazoKey ||
-          key === fechaActivacionKey ||
-          key === fechaEntregaFinalKey)
-      ) {
-        return true;
-      }
-
-      // Chequeo estándar: el campo debe tener valor.
-      return stageData[key] && stageData[key].trim() !== "";
-    });
-
-    // Lógica ESPECIAL para Ventas Final
-    if (isFinalStage) {
-      const fechaRechazoKey = "Fecha rechazo";
-      const fechaActivacionKey = "Fecha activación del pedido";
-      const fechaEntregaFinalKey = "Fecha de entrega final";
-      const usuarioFinalKey = "Usuario Ventas Final";
-
-      const rechazoLleno = !!stageData[fechaRechazoKey];
-      const activacionLleno = !!stageData[fechaActivacionKey];
-      const entregaLleno = !!stageData[fechaEntregaFinalKey];
-      const usuarioLleno = !!stageData[usuarioFinalKey];
-
-      // -----------------------------------------------------
-      // CONDICIÓN 1: RECHAZO (XOR)
-      // Fecha rechazo lleno Y (Fecha activación y Fecha entrega final) VACÍOS
-      const isRejectedComplete =
-        rechazoLleno && !activacionLleno && !entregaLleno && usuarioLleno;
-
-      // -----------------------------------------------------
-      // CONDICIÓN 2: ACTIVACIÓN + ENTREGA (XOR)
-      // (Fecha activación Y Fecha entrega final) LLENOS Y Fecha rechazo VACÍO
-      const isActivatedComplete =
-        !rechazoLleno && activacionLleno && entregaLleno && usuarioLleno;
-
-      // -----------------------------------------------------
-      // El proceso está completo si cumple una de las dos condiciones
-      const isBifurcationValid = isRejectedComplete || isActivatedComplete;
-
-      // La etapa final está completa si:
-      // 1. La bifurcación es válida.
-      // 2. Todos los demás campos (que no son los de fecha/bifurcación) están completos.
-      return isBifurcationValid && allOtherFieldsComplete;
-    }
-
-    // Lógica estándar para TODAS LAS DEMÁS etapas
-    return allOtherFieldsComplete;
-  };
-
-  // NUEVA FUNCIÓN: Verifica si TODAS las etapas están completas.
-  const isSaleFullyComplete = (saleId: string, process: Process) => {
-    // Si la venta no tiene datos cargados, no está completa.
-    if (!fieldData[saleId]) return false;
-
-    // Iterar sobre TODAS las etapas del proceso
-    return process.stages.every((stage, stageIndex) => {
-      // Reutiliza la función isStageComplete para cada etapa
-      return isStageComplete(saleId, stageIndex, stage.fields);
-    });
-  };
-
-  // Función de cierre (AHORA LLAMA AL BACKEND PARA MARCAR COMO CERRADA)
   const completeSale = async (saleId: string) => {
     if (
       !window.confirm(
-        `¿Estás seguro de que quieres CERRAR la venta ${saleId}? Esto la marcará como archivada y la quitará de la vista para todos los usuarios.`
+        `¿Estás seguro de que quieres CERRAR la venta ${saleId}? Esto la marcará como archivada.`
       )
     ) {
       return;
     }
 
     try {
-      // 1. LLAMAR AL BACKEND PARA MARCAR is_closed = TRUE
       const response = await fetch(
         `http://localhost:3000/api/ventas/${saleId}/close`,
         {
@@ -703,15 +644,17 @@ const ProcessVisualizer = () => {
 
       if (!response.ok) throw new Error("Error al marcar como cerrada en DB");
 
-      // 2. Si salió bien en el backend, quitar de la vista (Frontend)
+      // Actualizar frontend
       setSalesInstances((prev) => prev.filter((sale) => sale.id !== saleId));
       setFieldData((prev) => {
         const { [saleId]: _, ...rest } = prev;
         return rest;
       });
-      setExpandedProcess(null); // Colapsar por si acaso
+      setExpandedProcess(null);
 
-      // 3. Notificación
+      // Recargar lista cerrada
+      fetchClosedVentas();
+
       toast.success(
         `Venta ${saleId} CERRADA. El registro fue conservado en la base de datos.`
       );
@@ -723,13 +666,10 @@ const ProcessVisualizer = () => {
 
   const handleSaveFields = async () => {
     if (!selectedStage) return;
-
-    // Nota: El processId en selectedStage en realidad contiene el ID de la Venta (sale.id)
     const saleId = selectedStage.processId;
     const stageName = selectedStage.stage.title;
 
     try {
-      // 1. Guardar en Base de Datos
       const response = await fetch(
         `http://localhost:3000/api/ventas/${saleId}/stage/${encodeURIComponent(
           stageName
@@ -743,7 +683,6 @@ const ProcessVisualizer = () => {
 
       if (!response.ok) throw new Error("Error guardando campos");
 
-      // 2. Actualizar estado local (Visualización inmediata)
       const newFieldData = { ...fieldData };
       if (!newFieldData[saleId]) {
         newFieldData[saleId] = {};
@@ -766,31 +705,85 @@ const ProcessVisualizer = () => {
       toast.error("Error al guardar. Intente nuevamente.");
     }
   };
-  const formatValue = (val: string) => {
-    if (!val) return "";
-    // Si tiene una "T" (formato ISO), cortamos ahí
-    if (val.includes("T")) {
-      return val.split("T")[0];
+
+  const isStageComplete = (
+    saleId: string,
+    stageIndex: number,
+    fields: string[]
+  ) => {
+    const stageData = fieldData[saleId]?.[stageIndex];
+    if (!stageData) return false;
+
+    const processId = salesInstances.find((s) => s.id === saleId)?.processId;
+    const isFinalStage =
+      processes.find((p) => p.id === processId)?.stages[stageIndex].title ===
+      "Ventas Final";
+
+    const allOtherFieldsComplete = fields.every((field) => {
+      const isYesNoField = field.includes("[SI/NO]");
+      const key = isYesNoField ? field.replace(" [SI/NO]", "") : field;
+
+      const fechaRechazoKey = "Fecha rechazo";
+      const fechaActivacionKey = "Fecha activación del pedido";
+      const fechaEntregaFinalKey = "Fecha de entrega final";
+
+      if (
+        isFinalStage &&
+        (key === fechaRechazoKey ||
+          key === fechaActivacionKey ||
+          key === fechaEntregaFinalKey)
+      ) {
+        return true;
+      }
+      return stageData[key] && stageData[key].trim() !== "";
+    });
+
+    if (isFinalStage) {
+      const fechaRechazoKey = "Fecha rechazo";
+      const fechaActivacionKey = "Fecha activación del pedido";
+      const fechaEntregaFinalKey = "Fecha de entrega final";
+      const usuarioFinalKey = "Usuario Ventas Final";
+
+      const rechazoLleno = !!stageData[fechaRechazoKey];
+      const activacionLleno = !!stageData[fechaActivacionKey];
+      const entregaLleno = !!stageData[fechaEntregaFinalKey];
+      const usuarioLleno = !!stageData[usuarioFinalKey];
+
+      const isRejectedComplete =
+        rechazoLleno && !activacionLleno && !entregaLleno && usuarioLleno;
+      const isActivatedComplete =
+        !rechazoLleno && activacionLleno && entregaLleno && usuarioLleno;
+
+      const isBifurcationValid = isRejectedComplete || isActivatedComplete;
+      return isBifurcationValid && allOtherFieldsComplete;
     }
-    return val;
+
+    return allOtherFieldsComplete;
+  };
+
+  const isSaleFullyComplete = (saleId: string, process: Process) => {
+    if (!fieldData[saleId]) return false;
+    return process.stages.every((stage, stageIndex) => {
+      return isStageComplete(saleId, stageIndex, stage.fields);
+    });
   };
 
   // -----------------------------------
-  // RENDERIZADO CONDICIONAL DE LOGIN
+  // RENDER
   // -----------------------------------
   if (!currentUser.name) {
     return (
       <LoginComponent
         onLoginSuccess={(userName) => {
-          localStorage.setItem("vulcanoUser", userName); // <-- GUARDAR AQUÍ
+          localStorage.setItem("vulcanoUser", userName);
           setCurrentUser({ name: userName });
         }}
       />
     );
   }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* HEADER y ThemeToggle */}
       <header className="border-b bg-card shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
           <div className="flex items-center justify-between gap-4">
@@ -802,7 +795,6 @@ const ProcessVisualizer = () => {
                 Sistema de gestión comercial
               </p>
             </div>
-            {/* NUEVO: Mostrar usuario y opción de Logout */}
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground hidden sm:block">
                 Hola, {currentUser.name}
@@ -811,11 +803,11 @@ const ProcessVisualizer = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  localStorage.removeItem("vulcanoUser"); // <-- ELIMINAR AQUÍ
-                  setCurrentUser({ name: null }); // Logout
-                  setExpandedProcess(null); // Colapsar todo
-                  setSalesInstances([]); // Limpiar la vista
-                  setFieldData({}); // Limpiar datos
+                  localStorage.removeItem("vulcanoUser");
+                  setCurrentUser({ name: null });
+                  setExpandedProcess(null);
+                  setSalesInstances([]);
+                  setFieldData({});
                   toast.info("Sesión cerrada.");
                 }}
                 className="text-xs sm:text-sm"
@@ -828,12 +820,10 @@ const ProcessVisualizer = () => {
         </div>
       </header>
 
-      {/* CONTENIDO PRINCIPAL */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="space-y-4">
           {processes.map((process) => {
             const isExpanded = expandedProcess === process.id;
-            // CORRECCIÓN 1: Filtro correcto usando processId
             const salesForThisProcess = salesInstances.filter(
               (sale) => sale.processId === process.id
             );
@@ -892,7 +882,6 @@ const ProcessVisualizer = () => {
 
                 {isExpanded &&
                   salesForThisProcess.map((sale) => {
-                    // CORRECCIÓN 2: Encontrar el proceso base usando processId
                     const saleProcess = processes.find(
                       (p) => p.id === sale.processId
                     );
@@ -904,18 +893,14 @@ const ProcessVisualizer = () => {
                         key={sale.id}
                         className="border-t bg-muted/20 pt-3 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6"
                       >
-                        {/* ProcessVisualizer.tsx (Estructura de botones) */}
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
                           <span className="text-sm font-bold text-foreground/80">
                             {sale.id}
                           </span>
-                          {/* === Botones de Acción (Cerrar y Eliminar) === */}
                           <div className="flex gap-2">
-                            {/* Botón de Cierre */}
                             <Button
                               variant="default"
                               size="sm"
-                              // HABILITAR: Si TODAS las etapas de ese proceso están completas
                               disabled={
                                 !isSaleFullyComplete(sale.id, saleProcess)
                               }
@@ -928,7 +913,6 @@ const ProcessVisualizer = () => {
                               </span>
                             </Button>
 
-                            {/* Botón de Eliminación */}
                             <Button
                               variant="destructive"
                               size="sm"
@@ -939,9 +923,8 @@ const ProcessVisualizer = () => {
                               <span className="hidden xs:inline">Eliminar</span>
                             </Button>
                           </div>
-                          {/* =================================================== */}
                         </div>
-                        {/* FILA DE ETAPAS */}
+
                         <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
                           {saleProcess.stages.map((stage, index) => {
                             const isComplete = isStageComplete(
@@ -949,12 +932,10 @@ const ProcessVisualizer = () => {
                               index,
                               stage.fields
                             );
-                            // Las clases CSS 'bg-stage-complete/20 border-stage-complete' deben estar definidas en tu CSS global o tailwind config.
                             const cardClasses = isComplete
                               ? "bg-stage-complete/20 border-stage-complete"
                               : "bg-stage-pending/20 border-stage-pending";
 
-                            // Data para visualización (fuera del onClick)
                             const currentData =
                               fieldData[sale.id]?.[index] || {};
 
@@ -965,11 +946,8 @@ const ProcessVisualizer = () => {
                               >
                                 <Card
                                   className={`${cardClasses} border min-w-[180px] sm:min-w-[200px] md:min-w-[220px] cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 h-full`}
-                                  // CORRECCIÓN 3: onClick blindado
                                   onClick={() => {
                                     setFormValues({});
-
-                                    // IMPORTANTE: Obtener data fresca aquí dentro
                                     const freshData =
                                       fieldData[sale.id]?.[index] || {};
 
@@ -984,7 +962,6 @@ const ProcessVisualizer = () => {
                                         : field;
                                       const rawVal = freshData[key] || "";
 
-                                      // === LÓGICA DE AUTO-COMPLETADO ===
                                       if (
                                         key.includes("Usuario") &&
                                         rawVal === "" &&
@@ -995,12 +972,11 @@ const ProcessVisualizer = () => {
                                         initialValues[key] =
                                           formatValue(rawVal);
                                       }
-                                      // =================================
                                     });
 
                                     setFormValues(initialValues);
                                     setSelectedStage({
-                                      processId: sale.id, // Esto es el sale.id (vta-00X)
+                                      processId: sale.id,
                                       processName: sale.processName,
                                       stageIndex: index,
                                       stage,
@@ -1080,6 +1056,135 @@ const ProcessVisualizer = () => {
             );
           })}
         </div>
+
+        {/* ========================================================= */}
+        {/* NUEVA SECCIÓN: VENTAS CERRADAS (TABLA) */}
+        {/* ========================================================= */}
+        <div className="mt-20 pb-6">
+          <Card className="border hover:border-primary/30 transition-all duration-200 overflow-hidden shadow-sm">
+            <CardHeader
+              className="cursor-pointer select-none hover:bg-muted/50 transition-colors py-3 sm:py-4"
+              onClick={() =>
+                setExpandedProcess(
+                  expandedProcess === "ventas-cerradas"
+                    ? null
+                    : "ventas-cerradas"
+                )
+              }
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <CardTitle className="text-base sm:text-lg font-semibold flex flex-wrap items-center gap-2 sm:gap-3 flex-1">
+                  <span className="break-words">Ventas Cerradas</span>
+                  <Badge
+                    variant="secondary"
+                    className="font-normal text-xs whitespace-nowrap"
+                  >
+                    {closedVentas.length}{" "}
+                    {closedVentas.length === 1 ? "Venta" : "Ventas"}
+                  </Badge>
+                </CardTitle>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 sm:h-10 sm:w-10"
+                  >
+                    {expandedProcess === "ventas-cerradas" ? (
+                      <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+
+            {/* Contenido Colapsable */}
+            {expandedProcess === "ventas-cerradas" && (
+              <div className="border-t bg-muted/20 px-4 sm:px-6 py-6">
+                
+                {/* Cabecera con Título y Filtros */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">Fechas comprometidas</h3>
+                    <p className="text-sm text-muted-foreground">Detalle de hitos y cumplimiento de fechas.</p>
+                  </div>
+                  
+                  {/* Filtros Placeholder */}
+                  <div className="flex gap-2">
+                    <div className="w-[200px]">
+                      <Label className="text-xs mb-1 block">Filtrar por Cliente</Label>
+                      <Input placeholder="Buscar cliente..." className="h-8 text-xs" />
+                    </div>
+                    <div className="w-[200px]">
+                      <Label className="text-xs mb-1 block">Filtrar por Producto</Label>
+                      <Input placeholder="Buscar producto..." className="h-8 text-xs" />
+                    </div>
+                    <Button variant="outline" size="sm" className="h-8 mt-auto">
+                      <Filter className="w-3 h-3 mr-1" />
+                      Filtrar
+                    </Button>
+                  </div>
+                </div>
+
+                {closedVentas.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    No hay ventas cerradas actualmente.
+                  </p>
+                ) : (
+                  // TABLA RESPONSIVA
+                  <div className="relative w-full overflow-auto border rounded-md bg-background">
+                    <table className="w-full caption-bottom text-xs">
+                      <thead className="[&_tr]:border-b">
+                        <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">ID</th>
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Cliente</th>
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Producto</th>
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Tipo de Producto</th>
+                          
+                          {/* Fechas */}
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-green-50/50 dark:bg-green-900/20">Activación</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-blue-50/50 dark:bg-blue-900/20">Entrega Req.</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Inicio Diseño</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Fin Diseño</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Disp. Materiales</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Inicio Prod.</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Fin Prod.</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-green-50/50 dark:bg-green-900/20">Entrega Final</th>
+                        </tr>
+                      </thead>
+                      <tbody className="[&_tr:last-child]:border-0">
+                        {closedVentas.map((sale) => (
+                          <tr key={sale.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                            <td className="p-2 align-middle font-bold">{sale.id}</td>
+                            <td className="p-2 align-middle">{sale.clienteName || "-"}</td>
+                            <td className="p-2 align-middle">{sale.productoName || "-"}</td>
+                            <td className="p-2 align-middle">
+                              <Badge variant="outline" className="font-normal text-[10px] whitespace-nowrap">
+                                {sale.processName}
+                              </Badge>
+                            </td>
+                            
+                            {/* Fechas Centradas */}
+                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10">{sale.fechaActivacionPedido}</td>
+                            <td className="p-2 align-middle text-center bg-blue-50/30 dark:bg-blue-900/10 font-medium">{sale.fechaEntregaRequerida}</td>
+                            <td className="p-2 align-middle text-center">{sale.fechaInicioDiseno}</td>
+                            <td className="p-2 align-middle text-center">{sale.fechaFinDiseno}</td>
+                            <td className="p-2 align-middle text-center">{sale.fechaDispMateriales}</td>
+                            <td className="p-2 align-middle text-center">{sale.fechaInicioProduccion}</td>
+                            <td className="p-2 align-middle text-center">{sale.fechaFinProduccion}</td>
+                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10 font-bold">{sale.fechaEntregaFinal}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        </div>
       </main>
 
       <Dialog
@@ -1109,12 +1214,9 @@ const ProcessVisualizer = () => {
                   : field;
                 const formKey = cleanField;
 
-                // === LÓGICA DE SOLO LECTURA ===
                 const isUserField = formKey.includes("Usuario");
-                const isDisabled = isUserField && !!formValues[formKey]; // Deshabilitar si es campo Usuario y ya tiene valor.
-                // ===================================
+                const isDisabled = isUserField && !!formValues[formKey];
 
-                // Función auxiliar para limpiar la fecha
                 return (
                   <div key={idx} className="grid gap-1.5 sm:gap-2">
                     <Label
@@ -1162,7 +1264,6 @@ const ProcessVisualizer = () => {
                           }))
                         }
                         placeholder={cleanField}
-                        // === APLICAR EL ATRIBUTO DISABLED ===
                         disabled={isDisabled}
                       />
                     )}
@@ -1181,7 +1282,6 @@ const ProcessVisualizer = () => {
                         key={idx}
                         variant="outline"
                         className={cn("text-xs sm:text-sm", appClass)}
-                        // CORRECCIÓN 4: Eliminada la propiedad style={style} que daba error
                       >
                         {app}
                       </Badge>

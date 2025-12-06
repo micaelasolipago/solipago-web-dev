@@ -255,6 +255,18 @@ app.put("/api/ventas/:id/close", async (req, res) => {
   }
 });
 
+// GET: Obtener ventas cerradas (archivadas)
+app.get("/api/ventas/cerradas", async (req, res) => {
+  try {
+    const result = await query(
+      "SELECT * FROM ventas WHERE is_closed = TRUE ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error al obtener ventas cerradas:", err.stack);
+    res.status(500).json({ error: "Error interno del servidor." });
+  }
+});
 
 // ===================================
 // INICIO DEL SERVIDOR
