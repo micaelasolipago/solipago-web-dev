@@ -36,31 +36,31 @@ import {
 // ===================================
 
 const CLIENTE_OPTIONS = [
-  "Agroacopio Transportes S.R.L.",
-  "Agrosem S.R.L",
-  "Agrosilos S.R.L",
-  "Avanzar S.A.",
-  "Bollo y Cia SA",
-  "Calfrac Well Services Argentina S.A.",
-  "Castro Matias J.",
-  "Cereales Bogliolo S.R.L.",
-  "Claverie Pablo A.",
+  "Agroacopio",
+  "Agrosem",
+  "Agrosilos",
+  "Avanzar",
+  "Bollo",
+  "Calfrac",
+  "Castro",
+  "Cereales Bogliolo",
+  "Claverie",
   "Daniela Alanis",
-  "Distribuidora Gonzalez S.R.L.",
-  "Don Armando Espartillar S.A.",
-  "Don Nardo S.A.",
+  "Distribuidora Gonzalez",
+  "Don Armando Espartillar",
+  "Don Nardo",
   "Edgardo Valenti",
-  "Eskel S.A.",
-  "Frathi SRL",
+  "Eskel",
+  "Frathi",
   "G y A Domenech",
-  "Granja Kelly S.R.L.",
+  "Granja Kelly",
   "Hormetal",
-  "Logistica de Negocios S.A",
+  "Logistica de Negocios",
   "Marcelo Simon",
-  "Praxair Argentina S.R.L.",
-  "Siroco S.A (Transporte Carrara)",
-  "Transporte Greco SRL",
-  "Vitelli Hnos S.A.S",
+  "Praxair",
+  "Siroco",
+  "Transporte Greco",
+  "Vitelli",
 ];
 
 const PRODUCTO_OPTIONS = [
@@ -169,7 +169,7 @@ interface UserState {
 const processes: Process[] = [
   {
     id: "p1",
-    name: "Producto estándar",
+    name: "Estándar",
     stages: [
       {
         title: "Ventas Inicial",
@@ -204,7 +204,7 @@ const processes: Process[] = [
   },
   {
     id: "p3",
-    name: "Producto especial con ingeniería adaptada",
+    name: "Ingeniería adaptada",
     stages: [
       {
         title: "Ventas Inicial",
@@ -258,7 +258,7 @@ const processes: Process[] = [
   },
   {
     id: "p4",
-    name: "Producto especial con ingeniería a medida",
+    name: "Especial",
     stages: [
       {
         title: "Ventas Inicial",
@@ -281,6 +281,15 @@ const processes: Process[] = [
         apps: ["SIEMENS Teamcenter"],
       },
       {
+        title: "Administración",
+        fields: [
+          "Costo informado [SI/NO]",
+          "Fecha disponibilidad materiales",
+          "Usuario Administración",
+        ],
+        apps: ["Bejerman ERP"],
+      },
+      {
         title: "Producción | PCP",
         fields: [
           "Factibilidad [SI/NO]",
@@ -290,15 +299,7 @@ const processes: Process[] = [
         ],
         apps: ["SIEMENS Opcenter SC"],
       },
-      {
-        title: "Administración",
-        fields: [
-          "Costo informado [SI/NO]",
-          "Fecha disponibilidad materiales",
-          "Usuario Administración",
-        ],
-        apps: ["Bejerman ERP"],
-      },
+
       {
         title: "Directorio",
         fields: ["Ok para avanzar [SI/NO]", "Usuario Directorio"],
@@ -456,6 +457,14 @@ const LoginComponent = ({
       </Card>
     </div>
   );
+};
+
+// para hacer fecha dd/mm/aa
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) return "-";
+  // Asumiendo que la fecha viene como YYYY-MM-DD
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year.slice(-2)}`;
 };
 
 // ===================================
@@ -1153,29 +1162,18 @@ const ProcessVisualizer = () => {
                 {/* Cabecera con Título y Filtros */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                   <div>
-                    <h3 className="text-lg font-bold text-foreground">
-                      Fechas comprometidas
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Detalle de hitos y cumplimiento de fechas.
-                    </p>
+                    
                   </div>
 
                   {/* Filtros Placeholder */}
                   <div className="flex gap-2">
                     <div className="w-[200px]">
-                      <Label className="text-xs mb-1 block">
-                        Filtrar por Cliente
-                      </Label>
                       <Input
                         placeholder="Buscar cliente..."
                         className="h-8 text-xs"
                       />
                     </div>
                     <div className="w-[200px]">
-                      <Label className="text-xs mb-1 block">
-                        Filtrar por Producto
-                      </Label>
                       <Input
                         placeholder="Buscar producto..."
                         className="h-8 text-xs"
@@ -1244,7 +1242,7 @@ const ProcessVisualizer = () => {
                             key={sale.id}
                             className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                           >
-                            <td className="p-2 align-middle font-bold">
+                            <td className="p-2 align-middle font-medium whitespace-nowrap">
                               {sale.id}
                             </td>
                             <td className="p-2 align-middle">
@@ -1264,28 +1262,28 @@ const ProcessVisualizer = () => {
 
                             {/* Fechas Centradas */}
                             <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10">
-                              {sale.fechaActivacionPedido}
+                              {formatDate(sale.fechaActivacionPedido)}
                             </td>
                             <td className="p-2 align-middle text-center bg-blue-50/30 dark:bg-blue-900/10 font-medium">
-                              {sale.fechaEntregaRequerida}
+                              {formatDate(sale.fechaEntregaRequerida)}
                             </td>
                             <td className="p-2 align-middle text-center">
-                              {sale.fechaInicioDiseno}
+                              {formatDate(sale.fechaInicioDiseno)}
                             </td>
                             <td className="p-2 align-middle text-center">
-                              {sale.fechaFinDiseno}
+                              {formatDate(sale.fechaFinDiseno)}
                             </td>
                             <td className="p-2 align-middle text-center">
-                              {sale.fechaDispMateriales}
+                              {formatDate(sale.fechaDispMateriales)}
                             </td>
                             <td className="p-2 align-middle text-center">
-                              {sale.fechaInicioProduccion}
+                              {formatDate(sale.fechaInicioProduccion)}
                             </td>
                             <td className="p-2 align-middle text-center">
-                              {sale.fechaFinProduccion}
+                              {formatDate(sale.fechaFinProduccion)}
                             </td>
                             <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10 font-bold">
-                              {sale.fechaEntregaFinal}
+                              {formatDate(sale.fechaEntregaFinal)}
                             </td>
                           </tr>
                         ))}
