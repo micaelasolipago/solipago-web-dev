@@ -268,6 +268,24 @@ app.get("/api/ventas/cerradas", async (req, res) => {
   }
 });
 
+// NUEVA RUTA: Obtener el máximo ID numérico de todas las ventas (abiertas y cerradas)
+app.get("/api/ventas/max-id", async (req, res) => {
+  try {
+    // Consulta SQL para obtener el número máximo (la parte XXX de 'vta-XXX')
+    // El 'SUBSTRING(id FROM 'vta-([0-9]+)$')' extrae solo el número.
+    const result = await query(
+      "SELECT MAX(CAST(SUBSTRING(id FROM 'vta-([0-9]+)$') AS INTEGER)) AS max_num FROM ventas"
+    );
+
+    // Si no hay filas, el resultado es null, por lo que usamos 0 como valor por defecto.
+    const maxNum = result.rows[0].max_num || 0;
+    res.json({ maxIdNumber: maxNum });
+  } catch (err) {
+    console.error("Error al obtener el máximo ID:", err.stack);
+    res.status(500).json({ error: "Error interno del servidor." });
+  }
+});
+
 // ===================================
 // INICIO DEL SERVIDOR
 // ===================================
