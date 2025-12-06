@@ -30,7 +30,7 @@ const fieldMappings = {
   // 6. Ventas Final
   "Fecha rechazo": "fecha_rechazo",
   "Fecha activación del pedido": "fecha_activacion_pedido",
-  "Fecha de entrega final": "fecha_entrega_final",
+  "Fecha Compromiso": "fecha_entrega_final",
   "Usuario Ventas Final": "usuario_ventas_final"
 };
 

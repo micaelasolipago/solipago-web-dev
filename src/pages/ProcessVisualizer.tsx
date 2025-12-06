@@ -32,6 +32,50 @@ import {
 } from "@/components/ui/select";
 
 // ===================================
+// LISTAS DE VALIDACIÓN EN FRONTEND
+// ===================================
+
+const CLIENTE_OPTIONS = [
+  "Agroacopio Transportes S.R.L.",
+  "Agrosem S.R.L",
+  "Agrosilos S.R.L",
+  "Avanzar S.A.",
+  "Bollo y Cia SA",
+  "Calfrac Well Services Argentina S.A.",
+  "Castro Matias J.",
+  "Cereales Bogliolo S.R.L.",
+  "Claverie Pablo A.",
+  "Daniela Alanis",
+  "Distribuidora Gonzalez S.R.L.",
+  "Don Armando Espartillar S.A.",
+  "Don Nardo S.A.",
+  "Edgardo Valenti",
+  "Eskel S.A.",
+  "Frathi SRL",
+  "G y A Domenech",
+  "Granja Kelly S.R.L.",
+  "Hormetal",
+  "Logistica de Negocios S.A",
+  "Marcelo Simon",
+  "Praxair Argentina S.R.L.",
+  "Siroco S.A (Transporte Carrara)",
+  "Transporte Greco SRL",
+  "Vitelli Hnos S.A.S",
+];
+
+const PRODUCTO_OPTIONS = [
+  "Semirremolque Tolva",
+  "Carretón Vial",
+  "Unidad Especial",
+  "Bitren Tolva Módulo Trasero",
+  "Bitren Tolva Módulo Delantero",
+  "Bitren Portacontenedor Módulo Delantero",
+  "Bitren Portacontenedor Módulo Trasero",
+  "Bitren Sider Módulo Trasero",
+  "Bitren Sider Módulo Delantero",
+];
+
+// ===================================
 // MAPA DE TRADUCCIÓN (DB -> Frontend)
 // ===================================
 const dbToFrontendMap: Record<string, string> = {
@@ -65,7 +109,7 @@ const dbToFrontendMap: Record<string, string> = {
   // Ventas Final
   fecha_rechazo: "Fecha rechazo",
   fecha_activacion_pedido: "Fecha activación del pedido",
-  fecha_entrega_final: "Fecha de entrega final",
+  fecha_entrega_final: "Fecha Compromiso",
   usuario_ventas_final: "Usuario Ventas Final",
 };
 
@@ -151,7 +195,7 @@ const processes: Process[] = [
         fields: [
           "Fecha rechazo",
           "Fecha activación del pedido",
-          "Fecha de entrega final",
+          "Fecha Compromiso",
           "Usuario Ventas Final",
         ],
         apps: ["Bejerman ERP"],
@@ -205,7 +249,7 @@ const processes: Process[] = [
         fields: [
           "Fecha rechazo",
           "Fecha activación del pedido",
-          "Fecha de entrega final",
+          "Fecha Compromiso",
           "Usuario Ventas Final",
         ],
         apps: ["Bejerman ERP"],
@@ -265,7 +309,7 @@ const processes: Process[] = [
         fields: [
           "Fecha rechazo",
           "Fecha activación del pedido",
-          "Fecha de entrega final",
+          "Fecha Compromiso",
           "Usuario Ventas Final",
         ],
         apps: ["Bejerman ERP"],
@@ -459,7 +503,7 @@ const ProcessVisualizer = () => {
         throw new Error("Failed to fetch closed ventas");
       }
       const data = await response.json();
-      
+
       // Mapeamos los datos de la DB a nuestra interfaz ClosedSaleData
       const mappedData: ClosedSaleData[] = data.map((row: any) => ({
         id: row.id,
@@ -470,11 +514,13 @@ const ProcessVisualizer = () => {
         fechaEntregaRequerida: formatValue(row.fecha_entrega_requerida || ""),
         fechaInicioDiseno: formatValue(row.fecha_inicio_diseno || ""),
         fechaFinDiseno: formatValue(row.fecha_fin_diseno || ""),
-        fechaDispMateriales: formatValue(row.fecha_disponibilidad_materiales || ""),
+        fechaDispMateriales: formatValue(
+          row.fecha_disponibilidad_materiales || ""
+        ),
         fechaInicioProduccion: formatValue(row.fecha_inicio_produccion || ""),
         fechaFinProduccion: formatValue(row.fecha_fin_produccion || ""),
         fechaActivacionPedido: formatValue(row.fecha_activacion_pedido || ""),
-        fechaEntregaFinal: formatValue(row.fecha_entrega_final || "")
+        fechaEntregaFinal: formatValue(row.fecha_entrega_final || ""),
       }));
 
       setClosedVentas(mappedData);
@@ -484,14 +530,25 @@ const ProcessVisualizer = () => {
   };
 
   // Obtener ventas abiertas (activos)
+  // Obtener ventas abiertas (activos)
   const fetchSales = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/ventas");
-      if (!response.ok) throw new Error("Error al conectar con el servidor");
+      // 1. Fetch sales data (ventas activas)
+      const salesResponse = await fetch("http://localhost:3000/api/ventas");
+      if (!salesResponse.ok)
+        throw new Error("Error al conectar con el servidor de ventas activas");
 
-      const data = await response.json();
+      const data = await salesResponse.json();
 
-      // 1. Reconstruir SalesInstances
+      // 2. NUEVO: Obtener el ID más alto de la base de datos (incluyendo cerradas)
+      const maxIdResponse = await fetch(
+        "http://localhost:3000/api/ventas/max-id"
+      );
+      if (!maxIdResponse.ok) throw new Error("Error al obtener el máximo ID");
+      const maxIdData = await maxIdResponse.json();
+      const nextCounter = maxIdData.maxIdNumber + 1; // El siguiente ID es el máximo + 1
+
+      // 3. Reconstruir SalesInstances
       const loadedInstances: SalesInstance[] = data.map((row: any) => ({
         id: row.id,
         processId: row.process_id,
@@ -499,7 +556,7 @@ const ProcessVisualizer = () => {
       }));
       setSalesInstances(loadedInstances);
 
-      // 2. Reconstruir FieldData
+      // 4. Reconstruir FieldData
       const loadedFieldData: FieldData = {};
 
       data.forEach((row: any) => {
@@ -523,18 +580,8 @@ const ProcessVisualizer = () => {
 
       setFieldData(loadedFieldData);
 
-      // Actualizar contador
-      if (loadedInstances.length > 0) {
-        const maxId = Math.max(
-          ...loadedInstances.map((s) => {
-            const numPart = s.id.split("-").pop();
-            return parseInt(numPart || "0", 10) || 0;
-          })
-        );
-        setSaleCounter(maxId + 1);
-      } else {
-        setSaleCounter(1);
-      }
+      // 5. Actualizar contador con el valor obtenido del backend
+      setSaleCounter(nextCounter); // Usamos el valor máximo + 1 de la DB
     } catch (error) {
       console.error("Error cargando ventas:", error);
       toast.error("No se pudo conectar con el servidor de base de datos");
@@ -725,7 +772,7 @@ const ProcessVisualizer = () => {
 
       const fechaRechazoKey = "Fecha rechazo";
       const fechaActivacionKey = "Fecha activación del pedido";
-      const fechaEntregaFinalKey = "Fecha de entrega final";
+      const fechaEntregaFinalKey = "Fecha Compromiso";
 
       if (
         isFinalStage &&
@@ -741,7 +788,7 @@ const ProcessVisualizer = () => {
     if (isFinalStage) {
       const fechaRechazoKey = "Fecha rechazo";
       const fechaActivacionKey = "Fecha activación del pedido";
-      const fechaEntregaFinalKey = "Fecha de entrega final";
+      const fechaEntregaFinalKey = "Fecha Compromiso";
       const usuarioFinalKey = "Usuario Ventas Final";
 
       const rechazoLleno = !!stageData[fechaRechazoKey];
@@ -1103,23 +1150,36 @@ const ProcessVisualizer = () => {
             {/* Contenido Colapsable */}
             {expandedProcess === "ventas-cerradas" && (
               <div className="border-t bg-muted/20 px-4 sm:px-6 py-6">
-                
                 {/* Cabecera con Título y Filtros */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                   <div>
-                    <h3 className="text-lg font-bold text-foreground">Fechas comprometidas</h3>
-                    <p className="text-sm text-muted-foreground">Detalle de hitos y cumplimiento de fechas.</p>
+                    <h3 className="text-lg font-bold text-foreground">
+                      Fechas comprometidas
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Detalle de hitos y cumplimiento de fechas.
+                    </p>
                   </div>
-                  
+
                   {/* Filtros Placeholder */}
                   <div className="flex gap-2">
                     <div className="w-[200px]">
-                      <Label className="text-xs mb-1 block">Filtrar por Cliente</Label>
-                      <Input placeholder="Buscar cliente..." className="h-8 text-xs" />
+                      <Label className="text-xs mb-1 block">
+                        Filtrar por Cliente
+                      </Label>
+                      <Input
+                        placeholder="Buscar cliente..."
+                        className="h-8 text-xs"
+                      />
                     </div>
                     <div className="w-[200px]">
-                      <Label className="text-xs mb-1 block">Filtrar por Producto</Label>
-                      <Input placeholder="Buscar producto..." className="h-8 text-xs" />
+                      <Label className="text-xs mb-1 block">
+                        Filtrar por Producto
+                      </Label>
+                      <Input
+                        placeholder="Buscar producto..."
+                        className="h-8 text-xs"
+                      />
                     </div>
                     <Button variant="outline" size="sm" className="h-8 mt-auto">
                       <Filter className="w-3 h-3 mr-1" />
@@ -1138,43 +1198,95 @@ const ProcessVisualizer = () => {
                     <table className="w-full caption-bottom text-xs">
                       <thead className="[&_tr]:border-b">
                         <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">ID</th>
-                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Cliente</th>
-                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Producto</th>
-                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Tipo de Producto</th>
-                          
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+                            ID
+                          </th>
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+                            Cliente
+                          </th>
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+                            Producto
+                          </th>
+                          <th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+                            Tipo de Producto
+                          </th>
+
                           {/* Fechas */}
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-green-50/50 dark:bg-green-900/20">Activación</th>
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-blue-50/50 dark:bg-blue-900/20">Entrega Req.</th>
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Inicio Diseño</th>
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Fin Diseño</th>
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Disp. Materiales</th>
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Inicio Prod.</th>
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">Fin Prod.</th>
-                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-green-50/50 dark:bg-green-900/20">Entrega Final</th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-green-50/50 dark:bg-green-900/20">
+                            Activación
+                          </th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-blue-50/50 dark:bg-blue-900/20">
+                            Entrega Req.
+                          </th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">
+                            Inicio Diseño
+                          </th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">
+                            Fin Diseño
+                          </th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">
+                            Disp. Materiales
+                          </th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">
+                            Inicio Prod.
+                          </th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground">
+                            Fin Prod.
+                          </th>
+                          <th className="h-10 px-2 text-center align-middle font-medium text-muted-foreground bg-green-50/50 dark:bg-green-900/20">
+                            Fecha Compromiso
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="[&_tr:last-child]:border-0">
                         {closedVentas.map((sale) => (
-                          <tr key={sale.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                            <td className="p-2 align-middle font-bold">{sale.id}</td>
-                            <td className="p-2 align-middle">{sale.clienteName || "-"}</td>
-                            <td className="p-2 align-middle">{sale.productoName || "-"}</td>
+                          <tr
+                            key={sale.id}
+                            className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                          >
+                            <td className="p-2 align-middle font-bold">
+                              {sale.id}
+                            </td>
                             <td className="p-2 align-middle">
-                              <Badge variant="outline" className="font-normal text-[10px] whitespace-nowrap">
+                              {sale.clienteName || "-"}
+                            </td>
+                            <td className="p-2 align-middle">
+                              {sale.productoName || "-"}
+                            </td>
+                            <td className="p-2 align-middle">
+                              <Badge
+                                variant="outline"
+                                className="font-normal text-[10px] whitespace-nowrap"
+                              >
                                 {sale.processName}
                               </Badge>
                             </td>
-                            
+
                             {/* Fechas Centradas */}
-                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10">{sale.fechaActivacionPedido}</td>
-                            <td className="p-2 align-middle text-center bg-blue-50/30 dark:bg-blue-900/10 font-medium">{sale.fechaEntregaRequerida}</td>
-                            <td className="p-2 align-middle text-center">{sale.fechaInicioDiseno}</td>
-                            <td className="p-2 align-middle text-center">{sale.fechaFinDiseno}</td>
-                            <td className="p-2 align-middle text-center">{sale.fechaDispMateriales}</td>
-                            <td className="p-2 align-middle text-center">{sale.fechaInicioProduccion}</td>
-                            <td className="p-2 align-middle text-center">{sale.fechaFinProduccion}</td>
-                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10 font-bold">{sale.fechaEntregaFinal}</td>
+                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10">
+                              {sale.fechaActivacionPedido}
+                            </td>
+                            <td className="p-2 align-middle text-center bg-blue-50/30 dark:bg-blue-900/10 font-medium">
+                              {sale.fechaEntregaRequerida}
+                            </td>
+                            <td className="p-2 align-middle text-center">
+                              {sale.fechaInicioDiseno}
+                            </td>
+                            <td className="p-2 align-middle text-center">
+                              {sale.fechaFinDiseno}
+                            </td>
+                            <td className="p-2 align-middle text-center">
+                              {sale.fechaDispMateriales}
+                            </td>
+                            <td className="p-2 align-middle text-center">
+                              {sale.fechaInicioProduccion}
+                            </td>
+                            <td className="p-2 align-middle text-center">
+                              {sale.fechaFinProduccion}
+                            </td>
+                            <td className="p-2 align-middle text-center bg-green-50/30 dark:bg-green-900/10 font-bold">
+                              {sale.fechaEntregaFinal}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1215,7 +1327,22 @@ const ProcessVisualizer = () => {
                 const formKey = cleanField;
 
                 const isUserField = formKey.includes("Usuario");
+                // Bloquear campo si es de usuario y ya tiene valor, o si la lógica lo requiere
                 const isDisabled = isUserField && !!formValues[formKey];
+
+                // ---------------------------------------------------------
+                // 1. DETECTAR SI ES CAMPO DE CLIENTE O PRODUCTO
+                // ---------------------------------------------------------
+                const isClientField = cleanField === "Nombre del Cliente";
+                const isProductField = cleanField === "Nombre del Producto";
+                const isCustomSelect = isClientField || isProductField;
+
+                // Definir qué lista usar
+                const selectOptions = isClientField
+                  ? CLIENTE_OPTIONS
+                  : isProductField
+                  ? PRODUCTO_OPTIONS
+                  : [];
 
                 return (
                   <div key={idx} className="grid gap-1.5 sm:gap-2">
@@ -1234,7 +1361,12 @@ const ProcessVisualizer = () => {
                       )}
                     </Label>
 
-                    {isYesNoField ? (
+                    {/* ---------------------------------------------------------
+                        2. RENDERIZADO CONDICIONAL (LISTA vs SI/NO vs TEXTO)
+                       --------------------------------------------------------- */}
+
+                    {isCustomSelect ? (
+                      // CASO A: Lista Desplegable (Cliente / Producto)
                       <Select
                         value={formValues[formKey] || ""}
                         onValueChange={(value) =>
@@ -1243,6 +1375,32 @@ const ProcessVisualizer = () => {
                             [formKey]: value,
                           }))
                         }
+                        disabled={isDisabled}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue
+                            placeholder={`Seleccione ${cleanField}`}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : isYesNoField ? (
+                      // CASO B: Lista SI/NO
+                      <Select
+                        value={formValues[formKey] || ""}
+                        onValueChange={(value) =>
+                          setFormValues((prev) => ({
+                            ...prev,
+                            [formKey]: value,
+                          }))
+                        }
+                        disabled={isDisabled}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Seleccione..." />
@@ -1253,6 +1411,7 @@ const ProcessVisualizer = () => {
                         </SelectContent>
                       </Select>
                     ) : (
+                      // CASO C: Input Normal (Texto o Fecha)
                       <Input
                         id={`field-${idx}`}
                         type={isDateField ? "date" : "text"}
